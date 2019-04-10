@@ -1,0 +1,492 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.1.4/css/fixedHeader.bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/fixedheader/3.1.4/js/dataTables.fixedHeader.min.js"></script> <!-- Table fixed header  !-->
+<script src="https://cdn.rawgit.com/jquery/jquery-color/master/jquery.color.js"></script>  <!-- Color animations  !-->
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script> <!-- Cookie  !-->
+
+
+<script type="text/javascript">
+    var InfoButtonHTML = '<button type="button" class="btn btn-link btn-sm information" data-placement="left">';
+    InfoButtonHTML += '<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>';
+    InfoButtonHTML += '</button>';
+    //Blinking and highlight
+    //var bb;
+    $.fn.animateHighlight = function (highlightColor, duration) {
+        var highlightBg = highlightColor || "#FFFF9C";
+        var animateMs = duration || 1500;
+        var originalBg = this.css("backgroundColor");
+        this.stop().css("background-color", highlightBg)
+            .animate({ backgroundColor: originalBg }, animateMs);
+        setTimeout(function (obj) {
+            obj.removeAttr("style");
+        }, animateMs + 200, this)
+    };
+
+    //Update URL tag
+    function updateURLtag() {
+        $("span.Tag:contains('URL') + span.Value:contains('http'):not(:has(a))").each(function (index) {
+            // Get the content
+            var str = $(this).html();
+            // Set the regex string
+            var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
+            // Replace plain text links by hyperlinks
+            var replaced_text = str.replace(regex, "<a href='$1' target='_blank' style='color:#fff;'>$1</a>");
+            // Echo link
+            $(this).html(replaced_text);
+            console.log('URL updated for ' + str);
+        });
+    };
+
+    //Get local Timezone name
+    function getTimeZone() {
+        var now = new Date().toString();
+        var timeZone = now.replace(/.*[(](.*)[)].*/, '$1');//extracts the content between parenthesis
+        return timeZone;
+    };
+
+    //Geo location by IP address
+    var Geo;
+    var GeoName;
+    var getGeoLocation = function () { //https://ipdata.co/docs.html   1500 requests per day
+        var ret = $.get("https://api.ipdata.co?api-key=13cbea6e9ce3291f02c1ae6fb604dbe5b281ebbeca942724c02ee3e9", function (response) {
+            Geo = response;
+            $('div.geo').append('<li class="list-group-item">IP:<strong> ' + Geo.ip + '</strong></li>');
+            $('div.geo').append('<li class="list-group-item">City:<strong> ' + Geo.city + '</strong></li>');
+            $('div.geo').append('<li class="list-group-item">Region:<strong> ' + Geo.region + '</strong></li>');
+            $('div.geo').append('<li class="list-group-item flag">Country:<strong> ' + Geo.country_name + ' </strong></li>');
+            var img = $('<img />').attr({
+                'id': 'myImage',
+                'src': Geo.flag,
+                'alt': Geo.emoji_unicode,
+                'title': Geo.emoji_flag
+            }).appendTo('li.flag');
+        }, "jsonp");
+        return ret;
+    };
+
+    if (!GeoName)
+    {
+        if ("@User.Identity.IsAuthenticated"=== "False") {GeoName = "Anon"; }
+        else {GeoName = "@User.Identity.Name"; }
+    }
+    var makeStatus = function (index, obj) {
+        var dfrd = $.Deferred();
+        var $dataProvisioning = $(obj).find("td:nth-child(7)"); /* Provisioning State */
+        dd = obj;
+
+        //set update time state
+        var d = new Date();
+        var o = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        var localdate = d.toLocaleDateString('en-US', o);
+        $dataProvisioning.html($dataProvisioning.text() + '</br><p class="DateTime">' + localdate + '</p>');
+
+        makeButtons();
+        getInformation(index, obj);
+        updateURLtag();
+        return dfrd.promise();
+    };
+    var updateStatus = function (index, obj) {
+        var dfrd = $.Deferred();
+        var $dataVMName = $(obj).find("td:nth-child(1)"); /* VM Name */
+        var $dataRG = $(obj).find("td:nth-child(2)"); /* Resource Group */
+        var $dataSubscription = $(obj).find("td:nth-child(4)"); /* Subscription */
+        var $dataTags = $(obj).find("td:nth-child(3)"); /* Tags */
+        var $dataVMSize = $(obj).find("td:nth-child(5)"); /* VM Size */
+        var $dataPowerState = $(obj).find("td:nth-child(6)"); /* Power State */
+        var $dataProvisioning = $(obj).find("td:nth-child(7)"); /* Provisioning State */
+        var $dataVMId = $(obj).find("td:nth-child(8)"); /* VMId */
+        dd = obj;
+
+        if ($dataVMName.text().length == 0) {
+            console.log('Skip Index0:' + index);
+            return true; /* Skip first empty line with <TH> */
+        }
+
+        var $RGVMName = {
+            resourcegroup: $dataRG.text(),
+            vmname: $dataVMName.text(),
+            subscription: $dataSubscription.text()
+        };
+
+        getInformation(index, obj);
+
+        //Get current VM Status
+        jQuery.ajax({
+            type: "POST",
+            url: "/Dashboard?handler=getvminfo",
+            data: JSON.stringify($RGVMName),
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            dataType: "json"
+        }).done(function success(data) {
+            var d = new Date();
+            var o = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            var localdate = d.toLocaleDateString('en-US', o);
+            $dataTags.html('<div class="maxWidht">' + data.data.tags + '</div>');
+            $dataVMSize.html(data.data.vmSize);
+            $dataPowerState.html(data.data.powerState);
+            $dataProvisioning.html(data.data.provisioningState + '</br><p class="DateTime">' + localdate + '</p>');
+            makeButtons();
+            $(obj).animateHighlight("#00afff", 1000);
+            updateURLtag();
+            dfrd.resolve();
+        }).fail(function fail(data, status) {
+            console.log('Request failed for Get VM Status ' + $dataVMName.text() + '. JSON is ' + JSON.stringify($RGVMName) + ' Returned status of ' + status);
+            $(obj).animateHighlight("#dd0000", 1000);
+            dfrd.resolve();
+        });
+        return dfrd.promise();
+    };
+
+    var getInformation = function (index, obj) {
+        var dfrd = $.Deferred();
+        var $dataVMName = $(obj).find("td:nth-child(1)"); /* VM Name */
+        var $dataRG = $(obj).find("td:nth-child(2)"); /* Resource Group */
+        var $dataSubscription = $(obj).find("td:nth-child(4)"); /* Subscription */
+        dd = obj;
+
+        //Get Last Start/Stop Who Status
+        var $RGVMNameStop = {
+            resourcegroup: $dataRG.text(),
+            vmname: $dataVMName.text(),
+            subscription: $dataSubscription.text(),
+            key: 'Stop'
+        };
+        var $RGVMNameStart = {
+            resourcegroup: $dataRG.text(),
+            vmname: $dataVMName.text(),
+            subscription: $dataSubscription.text(),
+            key: 'Start'
+        };
+
+        $.when($.ajax({
+            url: '/Logs/Index?handler=getvmstopinfo',
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            cache: false,
+            data: JSON.stringify($RGVMNameStop)
+        }),
+            $.ajax({
+                url: '/Logs/Index?handler=getvmstartinfo',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                cache: false,
+                data: JSON.stringify($RGVMNameStart)
+            })
+        ).done(function (datastop, datastart) {
+            var htmltext = '<div class="panel">'
+            var tzName = getTimeZone() + ' - This is your local time zone';
+            if (datastart[0]) {
+                var startDateTime = new Date(datastart[0].timestamp);
+
+                htmltext += '<div class="panel-group">'
+                htmltext += '<div class="panel panel-success">'
+                htmltext += '<div class="panel-heading">Last Start by</div>'
+                htmltext += '<div class="panel-body">'
+                htmltext += '<p>Name: <strong>' + datastart[0].name + '</strong></p>'
+                htmltext += '<p>IP: <strong>' + datastart[0].ip + '</strong></p>'
+                htmltext += '<p>City: <strong>' + datastart[0].city + '</strong></p>'
+                htmltext += '<p>Region: <strong>' + datastart[0].region + '</strong></p>'
+                htmltext += '<p>Country: <strong>' + datastart[0].country + '</strong></p>'
+                htmltext += '<p data-toggle="tooltip" data-placement="bottom" title="' + tzName + '">Date: <strong>' + startDateTime.toLocaleDateString() + '</strong></p>'
+                htmltext += '<p data-toggle="tooltip" data-placement="bottom" title="' + tzName + '">Time: <strong>' + startDateTime.toLocaleTimeString() + '</strong></p>'
+                htmltext += '</div>'
+                htmltext += '</div>'
+                htmltext += '</div>'
+            }
+            if (datastop[0]) {
+                var stopDateTime = new Date(datastop[0].timestamp);
+                htmltext += '<div class="panel-group">'
+                htmltext += '<div class="panel panel-danger">'
+                htmltext += '<div class="panel-heading">Last Stop by</div>'
+                htmltext += '<div class="panel-body">'
+                htmltext += '<p>Name: <strong>' + datastop[0].name + '</strong></p>'
+                htmltext += '<p>IP: <strong>' + datastop[0].ip + '</strong></p>'
+                htmltext += '<p>City: <strong>' + datastop[0].city + '</strong></p>'
+                htmltext += '<p>Region: <strong>' + datastop[0].region + '</strong></p>'
+                htmltext += '<p>Country: <strong>' + datastop[0].country + '</strong></p>'
+                htmltext += '<p data-toggle="tooltip" data-placement="bottom" title="' + tzName + '">Date: <strong>' + stopDateTime.toLocaleDateString() + '</strong></p>'
+                htmltext += '<p data-toggle="tooltip" data-placement="bottom" title="' + tzName + '">Time: <strong>' + stopDateTime.toLocaleTimeString() + '</strong></p>'
+                htmltext += '</div>'
+                htmltext += '</div>'
+                htmltext += '</div>'
+
+            }
+            if (!datastart[0] && !datastop[0]) { htmltext += 'no info' }
+            htmltext += '</div>'
+
+            // //destroy information button
+            $(obj).find('td>button.information').popover('destroy').remove();
+           //// create new information button
+            $(obj).find('td>button').parent().append(InfoButtonHTML);
+
+            //add popover
+            var buttonInformation = $(obj).find('td>button.information');
+            buttonInformation.popover({ html: 'true', title: 'Last Start/Stop </br> <strong>VM:</strong><strong>' + $dataVMName.text() + '</strong> </br><strong>RG:</strong>' + $dataRG.text() + '', content: htmltext, trigger: 'focus' })
+                .on('inserted.bs.popover', function () {
+                    $('div.popover').css({ 'max-width': '450px' });
+                });
+
+        }).fail(function (datastop, datastart) {
+        });
+        return dfrd.promise();
+    };
+
+    //main procedure, that runs right after table load
+    var makeAllStatuses = function () {
+        $("tr").each(function (index) {
+            setTimeout(makeStatus.bind(null, index, this) //repeatable run
+                ,40);
+        })
+    };
+    var refreshRow = function (row, starting) {
+
+        (function runUpdStatus(delay, starting) {
+            updateStatus(-1, row);
+            var $dataPowerState = row.find("td:nth-child(6)"); /* Power State */
+            var txt = $dataPowerState.text();
+            if (starting) {
+                if ((txt == 'Starting') || (txt == 'Deallocated') || (txt == 'Started') || (txt == '') || (txt == 'Stopped')) {
+                    setTimeout(function () {
+                        runUpdStatus(delay, starting);
+                    }, delay);
+                }
+            }
+            else {
+                if ((txt == 'Running') || (txt == 'Deallocating') || (txt == '')) {
+                    setTimeout(function () {
+                        runUpdStatus(delay, starting);
+                    }, delay);
+                }
+            }
+        })(4000, starting)
+    };
+
+    var makeButtons = function () {
+        $("td:contains(Deallocated)").parent().find('button:not(.btn-link):not(.btn-default)').text('Start').removeClass().addClass('btn btn-success').prop("disabled", "");
+        $("td:contains(Stopped)").parent().find('button:not(.btn-link):not(.btn-default)').text('Stop').removeClass().addClass('btn btn-danger').prop("disabled", "");
+        $("td:contains(Running)").parent().find('button:not(.btn-link):not(.btn-default)').text('Stop').removeClass().addClass('btn btn-danger').prop("disabled", "");
+
+        $('button.btn-link.refresh').off("click").click(function () {
+            jQuery.when(
+                updateStatus(-1, $(this).parent().parent())
+            ).done(function () { console.log('Refreshed') })
+        });
+
+        $('button:not(.btn-link):not(.btn-default)').off("click").click(function () {
+            var $row = ($(this).parent().parent());
+            var $dataVMName = $row.find("td:nth-child(1)"); /* VM Name */
+            var $dataRG = $row.find("td:nth-child(2)"); /* Resource Group */
+            var $dataSubscription = $row.find("td:nth-child(4)"); /* Subscription */
+            var $dataTags = $row.find("td:nth-child(3)"); /* Tags */
+            var $dataPowerState = $row.find("td:nth-child(6)"); /* Power State */
+
+            $(this).prop("disabled", "disabled");
+
+            var $RGVMName = {
+                resourcegroup: $dataRG.text(),
+                vmname: $dataVMName.text(),
+                subscription: $dataSubscription.text(),
+            };
+
+            if (($dataPowerState.text() == 'Running') || ($dataPowerState.text() == 'Stopped')) {
+                $RGVMName = {
+                    resourcegroup: $dataRG.text(),
+                    vmname: $dataVMName.text(),
+                    subscription: $dataSubscription.text(),
+                    key: 'Stop',
+                    name: GeoName,
+                    ip: Geo.ip,
+                    city: Geo.city,
+                    region: Geo.region,
+                    country: Geo.country_name
+                };
+                console.log("Stopping..." + JSON.stringify($RGVMName));
+
+               // Last Start/Stop Logging
+                (function runAjax(retries, delay) {
+                    delay = delay || 1000;
+                    $.ajax({
+                        url: '/Logs/Index?handler=SetVMLogState',
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        cache: false,
+                        data: JSON.stringify($RGVMName)
+                    }).fail(function () {
+                        console.log('Retry Stop #' + retries); // prrint retry count
+                        retries > 0 && setTimeout(function () {
+                            runAjax(--retries);
+                        }, delay);
+                    })
+                })(3, 99000);
+
+                //Stopping
+                jQuery.ajax({
+                    type: "POST",
+                    url: "/Dashboard?handler=stopVM",
+                    data: JSON.stringify($RGVMName),
+                    contentType: "application/json; charset=utf-8",
+                    cache: false,
+                    dataType: "json"
+                }).done(function success(data) {
+                    refreshRow($row, false);
+                });
+            };
+
+            if ($dataPowerState.text() == 'Deallocated') {
+                $RGVMName = {
+                    resourcegroup: $dataRG.text(),
+                    vmname: $dataVMName.text(),
+                    subscription: $dataSubscription.text(),
+                    key: 'Start',
+                    name: GeoName,
+                    ip: Geo.ip,
+                    city: Geo.city,
+                    region: Geo.region,
+                    country: Geo.country_name
+                };
+                console.log("Starting... " + JSON.stringify($RGVMName));
+
+                // Last Start/Stop Logging
+                (function runAjax(retries, delay) {
+                    delay = delay || 1000;
+                    $.ajax({
+                        url: '/Logs/Index?handler=SetVMLogState',
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        cache: false,
+                        data: JSON.stringify($RGVMName)
+                    }).fail(function () {
+                        console.log('Retry Stop #' + retries); // prrint retry count
+                        retries > 0 && setTimeout(function () {
+                            runAjax(--retries);
+                        }, delay);
+                    })
+                })(3, 5000);
+
+                //Starting
+                jQuery.ajax({
+                    type: "POST",
+                    url: "/Dashboard?handler=startVM",
+                    data: JSON.stringify($RGVMName),
+                    contentType: "application/json; charset=utf-8",
+                    cache: false,
+                    dataType: "json"
+                }).done(function success(data) {
+                    refreshRow($row, true);
+                });
+
+            }
+        });
+    }
+    var table;
+    $(document).ready(function () {
+
+        if (!String.prototype.startsWith) {
+            String.prototype.startsWith = function (searchString, position) {
+                position = position || 0;
+                return this.indexOf(searchString, position) === position;
+            };
+        }
+
+        $.fn.dataTableExt.sErrMode = 'throw';
+
+        var ActionDefaultHTML = '<button class="btn btn-primary" disabled="disabled">Unknown</button>';
+        ActionDefaultHTML += '<button type="button" class="btn btn-link btn-sm refresh">';
+        ActionDefaultHTML += '<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>';
+        ActionDefaultHTML += '</button>' + InfoButtonHTML;
+        var postPath = "/Dashboard";
+        if (location.pathname === "/AnonymousDashboard")
+        { postPath = "/AnonymousDashboard"; }
+
+        $accessCode = {
+            accessCode: location.search
+        };
+
+
+        table = $('#example').DataTable({
+            "ajax": {
+                "url": postPath,
+                "type": "POST",
+                "dataSrc": "data",
+                "data": $accessCode
+
+            },
+            "columns": [
+                { "data": "vmName" },
+                { "data": "resourceGroupName" },
+                {
+                    "data": "tags",
+                    render: function (data, type, row) {
+                        if (type === 'filter') {
+                            return data;
+                        }
+                        return data;
+                    }
+                },
+                { "data": "subscriptionId" },
+                { "data": "vmSize" },
+                { "data": "powerState" },
+                { "data": "provisioningState" },
+                { "data": "vmId" },
+                { "data": "action" }
+            ],
+            "columnDefs": [{
+                "targets": -1,
+                "data": null,
+                "defaultContent": ActionDefaultHTML
+            }],
+            "order": [[1, "asc"]],
+            "paging": false,
+            "ordering": true,
+            "info": false,
+            "fixedHeader": true,
+            /*"colReorder": true,*/
+            /*"dom": "Rlfrtip", */
+            "initComplete": makeAllStatuses,
+            "language": {
+                "search": "Filter records:",
+                "searchPlaceholder": "type here.."
+            }
+
+        });
+        //Load table data error catch
+        $('#example').on('xhr.dt', function (e, settings, json, xhr) {
+            if (xhr.statusText == 'error') {
+                $('td.dataTables_empty').html('<div class="alert alert-danger" role="alert"><strong>ERROR</strong> Response:' + JSON.stringify(xhr) + ' JSON:' + JSON.stringify(json) + '</div>');
+            }
+        });
+
+        getGeoLocation();
+
+        //Show Hide Information about you panel
+        $('div.panel-heading.information-you').click(function () { $('div.panel-body.information-you').fadeToggle(); });
+        setTimeout(function () {
+            if (!GeoName || 0 === GeoName) {
+                $('div.panel-body.information-you').fadeIn();
+            } else {
+                $('div.panel-body.information-you').fadeOut();
+            }
+        }, 500);
+
+        //Show Hide Links panel
+        $('div.panel-heading.information-links').click(function () { $('div.panel-body.information-links').fadeToggle(); });
+        setTimeout(function () {
+            if (!GeoName || 0 === GeoName) {
+                $('div.panel-body.information-links').fadeIn();
+            } else {
+                $('div.panel-body.information-links').fadeOut();
+            }
+        }, 500);
+
+    });
+</script>

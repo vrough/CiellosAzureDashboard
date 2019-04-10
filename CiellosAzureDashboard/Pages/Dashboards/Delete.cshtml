@@ -1,0 +1,52 @@
+﻿@page "{id:int?}"
+@model CiellosAzureDashboard.Pages.Dashboards.DeleteModel
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Dashboard</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Dashboard.DashboardId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Dashboard.DashboardId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Dashboard.DashboardName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Dashboard.DashboardName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Dashboard.DashboardAnonAccessCode)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Dashboard.DashboardAnonAccessCode)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Dashboard.DashboardLogoUrl)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Dashboard.DashboardLogoUrl)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Dashboard.DashboardApplications)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Dashboard.DashboardApplications)
+        </dd>
+    </dl>
+
+    <form method="post">
+        <input type="hidden" asp-for="Dashboard.DashboardId" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-page="./Index">Back to List</a>
+    </form>
+</div>
+

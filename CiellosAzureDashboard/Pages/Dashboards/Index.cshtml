@@ -1,0 +1,140 @@
+﻿@page
+@model Dashboards.IndexModel
+@{
+    ViewData["Title"] = "Dashboards";
+}
+@{
+    Data.CADContext context = new Data.CADContext();
+    if (context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name) != null)
+    {
+        if (!context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name).IsSuperUser)
+        {
+            Redirect(Url.Content("~/"));
+        }
+    }
+}
+
+<p>
+    <a asp-page="Create"><input type="button" value="Create" class="btn btn-success" /></a>
+</p>
+<table class="table table-bordered table-hover" cellspacing="0">
+    <thead style="background: SteelBlue; color: Yellow;">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Dashboards.FirstOrDefault().DashboardId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Dashboards.FirstOrDefault().DashboardName)
+            </th>
+            <th>
+                Custom actions
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Dashboards.FirstOrDefault().DashboardLogoUrl)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Dashboards.FirstOrDefault().DashboardApplications)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Dashboards)
+        {
+
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DashboardId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DashboardName)
+                </td>
+                <td>
+                    @if (item.DashboardAnonAccessCode == null)
+                    {
+                        var dash = context.Dashboards.First(d => d.DashboardId == item.DashboardId);
+                        dash.DashboardAnonAccessCode = DashboardHelper.CalculateHash(dash.DashboardName);
+                        context.SaveChanges();
+                    }
+                    <button onclick="copyToClipboard('@Html.DisplayFor(modelItem => item.DashboardAnonAccessCode)')" class="btn btn-success btn-block">Copy Dashboard URL</button>
+                    <br>
+                    <button onclick="setAsDefault('@Html.DisplayFor(modelItem => item.DashboardId)')" class="btn btn-info btn-block">Set as default</button>
+                    <br>
+                    <button onclick="navigateTo('@Html.DisplayFor(modelItem => item.DashboardId)')" class="btn btn-warning btn-block">Open dashboard</button>
+                </td>
+                <td>
+                    <img src='@Html.DisplayFor(modelItem => item.DashboardLogoUrl)' class="img-responsive" style="height: 68px;">
+                </td>
+                <td>
+                    @{
+                        foreach (var lineValue in item.ApplicationsDescriptions.Split("; ").ToList())
+                        {
+                            <span class="TagRow">
+                                <span class="Tag">App</span>
+                                <span class="Value">@Html.DisplayFor(modelItem => lineValue)</span>
+                            </span>
+                            <br>
+                        }
+
+                    }
+                </td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.DashboardId"><input type="button" value="Edit" class="btn btn-default" /></a> |
+                    <a asp-page="./Delete" asp-route-id="@item.DashboardId"><input type="button" value="Delete" class="btn btn-danger" /></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.1.4/css/fixedHeader.bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.1.4/js/dataTables.fixedHeader.min.js"></script> <!-- Table fixed header  !-->
+    <script src="https://cdn.rawgit.com/jquery/jquery-color/master/jquery.color.js"></script>  <!-- Color animations  !-->
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script> <!-- Cookie  !-->
+    <script type="text/javascript">
+
+        function varSetDefault(id) {
+            var $id = {
+                id: id
+            };
+            return jQuery.ajax({
+                    type: "POST",
+                    url: "/Dashboard?handler=setasdefault",
+                    data: JSON.stringify($id),
+                    contentType: "application/json; charset=utf-8",
+                    cache: false,
+                    dataType: "json",
+
+                }).done(function (data) {
+                    if (data) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                })
+        }
+        function setAsDefault(id) {
+            var Val = confirm("Do you want to set this dashboard as default?");
+            if (Val == true) {
+                return varSetDefault(id);
+            }
+            else { return false; }
+        }
+        function navigateTo(id) {
+            $.when(varSetDefault(id)).done(function (retData) {
+                var res = retData; 
+                if (res.data==true) {
+                    window.location.href = "@Url.Content("~/")";
+                }
+            });
+        }
+    </script>
+}

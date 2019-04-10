@@ -1,0 +1,51 @@
+﻿@page
+@model Users.IndexModel
+@{
+    ViewData["Title"] = "Users";
+}
+<p>
+    <a asp-page="Create"><input type="button" value="Create" class="btn btn-success" /></a>
+</p>
+<table class="table table-bordered table-hover" cellspacing="0">
+    <thead style="background: SteelBlue; color: Yellow;">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Users[0].UserId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Users[0].UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Users[0].IsSuperUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Users[0].Dashboard.DashboardId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Users)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsSuperUser)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DashboardDescription)
+                </td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.UserId"><input type="button" value="Edit" class="btn btn-default" /></a> |
+                    <a asp-page="./Delete" asp-route-id="@item.UserId"><input type="button" value="Delete" class="btn btn-danger" /></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

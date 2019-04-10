@@ -1,0 +1,46 @@
+@using Microsoft.EntityFrameworkCore;
+<div class="row" style="padding:15px"> </div>
+<div class="row">
+    <div class="col-md-2">
+        <div class="panel panel-info information-you">
+            <div class="panel-heading information-you">Information about you</div>
+            <div class="panel-body information-you">
+                <div class="list-group geo">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="panel panel-info information-links">
+            <div class="panel-heading information-links">Links</div>
+            <div class="panel-body information-links">
+                <div class="list-group">
+                    @{
+                        try
+                        {
+                            Data.CADContext context = new Data.CADContext();
+                            
+                            int? dId = (int?)(ViewData["DasboardId"]);
+
+                            var dash = context.Dashboards.Include(d => d.Links).FirstOrDefault(d => d.DashboardId == dId);
+
+                            foreach (Link lnk in dash.Links)
+                            {
+                            <li class="list-group-item"><a href="@lnk.linkUrl" target='_blank'>@lnk.linkName</a></li>
+                            }
+                        }
+                        catch
+                        { }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <h1 class='text-center'>@ViewData["Title"]</h1>
+    </div>
+    <div class="col-md-3">
+        <img src='@ViewData["Logo"]' class="img-responsive">
+    </div>
+
+</div>

@@ -1,0 +1,106 @@
+/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+body {
+    padding-top: 0px;
+    padding-bottom: 20px;
+}
+
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Carousel */
+.carousel-caption p {
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+/* Make .svg files in the carousel display properly in older browsers */
+.carousel-inner .item img[src$=".svg"] {
+    width: 100%;
+}
+
+/* QR code generator */
+#qrCode {
+    margin: 15px;
+}
+
+/* Hide/rearrange for smaller screens */
+@media screen and (max-width: 767px) {
+    /* Hide captions */
+    .carousel-caption {
+        display: none;
+    }
+}
+.Tag {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    display: inline;
+    padding: .1em .4em .1em;
+    font-size: 75%;
+    line-height: 1;
+    color: #fff;
+    background-color: #5bc0de;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+
+}
+
+.Tag:after {
+        content: ":"
+    }
+
+.Value {
+    background-color: #337ab7;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    display: inline;
+    padding: .1em .2em .1em;
+    font-size: 90%;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+    transition: transform .2s; /* Animation */
+}
+
+.zoom {
+    padding: 0px;
+    transition: transform .15s; /* Animation */
+    margin: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: -5px;
+    padding-bottom: -5px;
+}
+    .zoom:hover {
+        -ms-transform: scale(1.5); /* IE 9 */
+        -webkit-transform: scale(1.5); /* Safari 3-8 */
+        transform: scale(1.5);
+    }
+.maxWidht {
+    max-width: 250px;
+    display: inline;
+}
+
+div.Logs {
+    color: rgb(138, 27, 27);
+}
+
+p.DateTime {
+    font-size: xx-small;
+    color: gray;
+}
+
+span.Debug {
+    color: burlywood;
+}
+
+tr.error {
+    background-color: crimson;
+}

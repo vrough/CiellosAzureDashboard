@@ -1,0 +1,71 @@
+﻿@page
+@model CiellosAzureDashboard.Pages.Settings.IndexModel
+@{
+    ViewData["Title"] = Model.Message;
+    
+}
+
+<div class="row">
+    <div class="col-md-3">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="settings.settingId" />
+            <div class="form-group">
+                <label asp-for="settings.MaxNumEventsLogStorePerVM" class="control-label"></label>
+                <input asp-for="settings.MaxNumEventsLogStorePerVM" class="form-control" />
+                <span asp-validation-for="settings.MaxNumEventsLogStorePerVM" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="button" class="btn btn-danger" value="Cleanup system logs" onclick="cleanLogs();" />
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" asp-page-handler="Download" value="Download public certificate" />
+            </div>
+            <div class="form-group">
+                <input type="button" id="btnUpload" class="btn btn-danger" value="Rotate private certificate" />
+                <label class="control-label text-info">@Model.CertExpirationDate</label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save settings" class="btn btn-primary" />
+                <label class="control-label text-info">@Model.SaveResult</label>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        $('#btnUpload').on('click', function () {
+            $.ajax({
+                type: "POST",
+                url: "/Settings/Index?handler=RotateCertificate",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                }
+            });
+        })
+
+        function cleanLogs() {
+            $.ajax({
+                type: "POST",
+                url: '/Logs/Index?handler=cleanLogs',
+                contentType: "application/json; charset=utf-8",
+                //data: vmName,
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                },
+                failure: function (response) {
+                    alert(response);
+                }
+            })
+        }
+    </script>
+}

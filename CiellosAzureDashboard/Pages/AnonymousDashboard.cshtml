@@ -1,0 +1,18 @@
+﻿@page
+@model CiellosAzureDashboard.Pages.AnonymousDashboardModel
+@{
+    if (@Model.Title != null)
+    {
+        ViewData["Title"] = @Model.Title;
+        ViewData["Logo"] = @Model.Logo;
+        ViewData["DasboardId"] = @Model.DashboardId;
+    }
+    else { ViewData["Title"] = "AnonymousDashboard"; }
+    Layout = "~/Pages/Shared/_AnonymousLayout.cshtml";
+}
+
+<partial name="_DashboardPartial" />
+
+@section Scripts {
+    <partial name="_DashboardScripts" />
+}

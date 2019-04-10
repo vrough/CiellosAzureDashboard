@@ -1,0 +1,92 @@
+﻿@page
+@model Logs.IndexModel
+@{
+    ViewData["Title"] = "Users";
+}
+<table class="table table-bordered table-hover" cellspacing="0">
+    <thead style="background: SteelBlue; color: Yellow;">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].logId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].vmname)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].resourcegroup)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].subscription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].country)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].region)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].city)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].ip)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].key)
+            </th>
+
+
+            <th>
+                @Html.DisplayNameFor(model => model.Logs[0].timestamp)
+            </th>
+            @*<th></th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Logs)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.logId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.vmname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.resourcegroup)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.subscription)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.country)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.region)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.city)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ip)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.key)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.timestamp)
+            </td>
+
+            @*<td>
+            <a asp-page="./Delete" asp-route-id="@item.logId"><input type="button" value="Delete" class="btn btn-danger" /></a>
+        </td>*@
+        </tr>
+        }
+    </tbody>
+</table>
+

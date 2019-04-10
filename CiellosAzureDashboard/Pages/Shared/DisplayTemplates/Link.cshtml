@@ -1,0 +1,14 @@
+﻿@model CiellosAzureDashboard.Model.Link
+<div class="form-inline add-set">
+    <div class="form-group">
+        @Html.LabelFor(x => x.linkName, new { @class = "control-label" })
+        @Html.TextBoxFor(x => x.linkName, new { @class = "form-control" })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(x => x.linkUrl, new { @class = "control-label" })
+        @Html.TextBoxFor(x => x.linkUrl, new { @class = "form-control" })
+    </div>
+    <div class="form-group">
+        <button class="btn btn-remove-set" data-toggle="tooltip" title="Remove Link"><span class="glyphicon glyphicon-minus"></span></button>
+    </div>
+</div>

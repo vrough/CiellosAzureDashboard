@@ -1,0 +1,193 @@
+﻿@page "{id:int}"
+@model CiellosAzureDashboard.Pages.Applications.EditModel
+@{
+    ViewData["Title"] = "Edit";
+}
+<style type="text/css">
+    .ques {
+        color: darkslateblue;
+    }
+
+    .iswitch {
+        position: relative;
+        display: inline-block;
+        width: 130px;
+        height: 30px;
+    }
+
+        .iswitch input {
+            display: none;
+        }
+
+    .islider {
+        position: absolute;
+        cursor: pointer;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #eee;
+        -webkit-transition: .2s;
+        transition: .2s;
+    }
+
+        .islider:before {
+            position: absolute;
+            z-index: 2;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 2px;
+            bottom: 2px;
+            background-color: darkslategrey;
+            -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+            -webkit-transition: .2s;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .islider:after {
+            position: absolute;
+            left: -10px;
+            z-index: 1;
+            content: "Certificate";
+            font-size: 16px;
+            text-align: left;
+            line-height: 30px;
+            padding-left: 0;
+            width: 140px;
+            color: #fff;
+            height: 30px;
+            border-radius: 36px;
+            background-color: #62d6fc;
+            -webkit-transform: translateX(-0px);
+            -ms-transform: translateX(-0px);
+            transform: translateX(-100px);
+            transition: all 0.2s ease-in-out;
+        }
+
+    input:checked + .islider:after {
+        -webkit-transform: translateX(0px);
+        -ms-transform: translateX(0px);
+        transform: translateX(0px);
+        /*width: 235px;*/
+        padding-left: 25px;
+    }
+
+    input:checked + .islider:before {
+        background-color: #eee;
+    }
+
+    input:checked + .islider:before {
+        -webkit-transform: translateX(10px);
+        -ms-transform: translateX(10px);
+        transform: translateX(100px);
+    }
+
+    /* Rounded sliders */
+    .islider.round {
+        border-radius: 100px;
+    }
+
+        .islider.round:before {
+            border-radius: 50%;
+        }
+
+    .absolute-no {
+        position: absolute;
+        left: 0;
+        color: darkslategrey;
+        text-align: right !important;
+        font-size: 16px;
+        width: calc(100% - 16px);
+        height: 30px;
+        line-height: 30px;
+        cursor: pointer;
+    }
+
+</style>
+
+<h1>Edit</h1>
+
+<h4>Application</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Application.AppId" />
+            <div class="form-group">
+                <label asp-for="Application.Description" class="control-label"></label>
+                <input asp-for="Application.Description" class="form-control" />
+                <span asp-validation-for="Application.Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Application.ClientId" class="control-label"></label>
+                <input asp-for="Application.ClientId" class="form-control" />
+                <span asp-validation-for="Application.ClientId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="iswitch">
+                    @if (Model.IsSelected)
+                    {
+                        <input type="checkbox" class="btn btn-checkbox" checked>
+                    }
+                    else
+                    {
+                        <input type="checkbox" class="btn btn-checkbox" unchecked>
+                    }
+                    <span class="islider round"></span>
+                    <span class="absolute-no">Secret key</span>
+                </label>
+            </div>
+            <div class="form-group" id="secretKey">
+                <label asp-for="Application.ClientSecret" class="control-label"></label>
+                <input asp-for="Application.ClientSecret" class="form-control" />
+                <span asp-validation-for="Application.ClientSecret" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Application.SubscriptionId" class="control-label"></label>
+                <input asp-for="Application.SubscriptionId" class="form-control" />
+                <span asp-validation-for="Application.SubscriptionId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Application.TenantId" class="control-label"></label>
+                <input asp-for="Application.TenantId" class="form-control" />
+                <span asp-validation-for="Application.TenantId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var wrapper = $(".btn-checkbox");
+            var secretKey = document.getElementById("secretKey");
+
+            updateFields();
+            wrapper.click(function (e) {
+                updateFields();
+            });
+
+            function updateFields() {
+                if (document.querySelector('.btn-checkbox').checked) {
+                    secretKey.style.display = 'none';
+                }
+                else {
+                    secretKey.style.display = 'block';
+                }
+            }
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

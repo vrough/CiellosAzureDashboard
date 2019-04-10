@@ -1,0 +1,58 @@
+﻿@page "{id:int?}"
+@model CiellosAzureDashboard.Pages.Applications.DeleteModel
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Application</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Application.AppId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Application.AppId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Application.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Application.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Application.ClientId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Application.ClientId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Application.ClientSecret)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Application.ClientSecret)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Application.SubscriptionId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Application.SubscriptionId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Application.TenantId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Application.TenantId)
+        </dd>
+    </dl>
+
+    <form method="post">
+        <input type="hidden" asp-for="Application.AppId" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-page="./Index">Back to List</a>
+    </form>
+</div>
+

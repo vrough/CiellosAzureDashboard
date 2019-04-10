@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Ciellos Dashboards</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a asp-page="/Index" class="navbar-brand">Ciellos Dashboards</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @{
+                        var rv = ViewContext.RouteData.Values;
+                        string page = $"{rv["page"]}".ToLowerInvariant();
+
+                        Data.CADContext _context = new Data.CADContext();
+
+                        if (Context.User.Identity != null)
+                        {
+                            if (_context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name) != null)
+                            {
+                                if (_context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name).IsSuperUser)
+                                {
+                                    <li class="@(page == "/dashboards/index" ? "active" : "")"><a asp-page="/Dashboards/Index">Dashboards</a></li>
+                                    <li class="@(page == "/applications/index" ? "active" : "")"><a asp-page="/Applications/Index">Applications</a></li>
+                                    <li class="@(page == "/users/index" ? "active" : "")"><a asp-page="/Users/Index">Users</a></li>
+                                    <li class="@(page == "/logs/index" ? "active" : "")"><a asp-page="/Logs/Index">Logs</a></li>
+                                    <li class="@(page == "/settings/index" ? "active" : "")"><a asp-page="/Settings/Index">Settings</a></li>
+                                }
+                            }
+                        }
+                    }
+                </ul>
+                <partial name="_LoginPartial" />
+            </div>
+        </div>
+    </nav>
+
+    <partial name="_CookieConsentPartial" />
+
+    <div class="body-content">
+        <hr />
+        @RenderBody()
+        <hr />
+        <footer>
+            <div style="text-align:center;">
+                <p>Build version:@AppVersionService.Version | &copy; @DateTime.Now.Year - Ciellos Dashboards </p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

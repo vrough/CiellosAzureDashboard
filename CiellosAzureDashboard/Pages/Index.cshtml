@@ -1,0 +1,13 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = @Model.Title;
+    ViewData["Logo"] = @Model.Logo;
+    ViewData["DasboardId"] = @Model.DashboardId;
+}
+
+<partial name="_DashboardPartial" />
+
+@section Scripts {
+    <partial name="_DashboardScripts" />
+}

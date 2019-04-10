@@ -1,0 +1,63 @@
+﻿@page
+@model Applications.IndexModel
+@{
+    ViewData["Title"] = "Applications";
+}
+<p>
+    <a asp-page="Create"><input type="button" value="Create" class="btn btn-success" /></a>
+</p>
+<table class="table table-bordered table-hover" cellspacing="0">
+    <thead style="background: SteelBlue; color: Yellow;">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Applications[0].AppId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Applications[0].Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Applications[0].ClientId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Applications[0].ClientSecret)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Applications[0].SubscriptionId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Applications[0].TenantId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Applications)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.AppId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClientId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClientSecret)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubscriptionId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TenantId)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.AppId"><input type="button" value="Edit" class="btn btn-default" /></a> |
+                <a asp-page="./Delete" asp-route-id="@item.AppId"><input type="button" value="Delete" class="btn btn-danger" /></a>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
