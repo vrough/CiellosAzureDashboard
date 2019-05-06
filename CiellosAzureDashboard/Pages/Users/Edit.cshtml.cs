@@ -34,8 +34,10 @@ namespace CiellosAzureDashboard.Pages.Users
             }
 
             Dashboards = new SelectList(_context.Dashboards.ToList(), nameof(Dashboard.DashboardId), nameof(Dashboard.DashboardName));
+
             User = _context.Users.Include(u=>u.Dashboard).FirstOrDefault(u => u.UserId == id);
             SelectedDashboard = User.Dashboard;
+
             if (User == null)
             {
                 return NotFound();

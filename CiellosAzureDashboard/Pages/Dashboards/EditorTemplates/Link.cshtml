@@ -1,13 +1,16 @@
 ﻿@model CiellosAzureDashboard.Model.Link
 <div class="form-inline add-set">
-    <div class="form-group">
-        @Html.LabelFor(x => x.linkName, new { @class = "control-label" })
+    <div class="col-xs-5">
+        @Html.LabelFor(x => x.linkName, new { @class = "control-label " })
         @Html.TextBoxFor(x => x.linkName, new { @class = "form-control" })
     </div>
-    <div class="form-group">
+    <div class="col-xs-5">
         @Html.LabelFor(x => x.linkUrl, new { @class = "control-label" })
         @Html.TextBoxFor(x => x.linkUrl, new { @class = "form-control" })
     </div>
+    <div class="col-xs-1">
         <input type="button" value="-" class="glyphicon glyphicon-minus btn btn-danger" onclick="removeRow(this)">
+    </div>
+
     <br>
 </div>

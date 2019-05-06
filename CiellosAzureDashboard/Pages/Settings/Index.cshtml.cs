@@ -96,7 +96,6 @@ namespace CiellosAzureDashboard.Pages.Settings
                 //    }
                 //}
                 return this.Content("Success");
-            return this.Content("Success");
         }
 
     }

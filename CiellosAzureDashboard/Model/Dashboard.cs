@@ -25,8 +25,11 @@ namespace CiellosAzureDashboard.Model
         public string DashboardLogoUrl { get; set; }
         [DisplayName("Dashboard Connected Applications")]
         public List<DashboardApplication> DashboardApplications { get; set; } = new List<DashboardApplication>();
+
         [DisplayName("Links")]
         public virtual List<Link> Links { get; set; }
+        [DisplayName("Virtual machines display type")]
+        public DisplayType DisplayType { get; set; }
         public string ApplicationsDescriptions
         {
             get
@@ -49,5 +52,13 @@ namespace CiellosAzureDashboard.Model
                 }
             }
         }
+
+    }
+
+    public enum DisplayType
+    {
+        ShowAll = 0,
+        SelectType = 1,
+        ExcludeType = 2
     }
 }

@@ -16,35 +16,36 @@ namespace CiellosAzureDashboard.Pages
         public string Title { get; set; }
         public string Logo { get; set; }
         public int DashboardId { get; set; }
-        private CADContext _context;
         public IndexModel()
         {
-            _context = new CADContext();
         }
         public void OnGet()
         {
             Model.User user = new Model.User();
-            if (_context.Users.Where(u=>u.IsSuperUser == true).Count() == 0)
+            using (var context = new CADContext())
             {
-                user.UserName = this.User.Identity.Name;
-                user.IsSuperUser = true;
-                _context.Users.Add(user);
-                _context.SaveChanges();
-            }
-            if (_context.Users.FirstOrDefault(u => u.UserName == this.User.Identity.Name) == null)
-            {
-                
-                user.UserName = this.User.Identity.Name;
-                user.IsSuperUser = false;
-                _context.Users.Add(user);
-                _context.SaveChanges();
-            }
-            user = _context.Users.Include(u => u.Dashboard).FirstOrDefault(u => u.UserName == this.User.Identity.Name);
-            if (user.Dashboard != null)
-            {
-                Title = user.Dashboard.DashboardName;
-                Logo = user.Dashboard.DashboardLogoUrl;
-                DashboardId = user.Dashboard.DashboardId;
+                if (context.Users.Where(u => u.IsSuperUser == true).Count() == 0)
+                {
+                    user.UserName = this.User.Identity.Name;
+                    user.IsSuperUser = true;
+                    context.Users.Add(user);
+                    context.SaveChanges();
+                }
+                if (context.Users.FirstOrDefault(u => u.UserName == this.User.Identity.Name) == null)
+                {
+
+                    user.UserName = this.User.Identity.Name;
+                    user.IsSuperUser = false;
+                    context.Users.Add(user);
+                    context.SaveChanges();
+                }
+                user = context.Users.Include(u => u.Dashboard).FirstOrDefault(u => u.UserName == this.User.Identity.Name);
+                if (user.Dashboard != null)
+                {
+                    Title = user.Dashboard.DashboardName;
+                    Logo = user.Dashboard.DashboardLogoUrl;
+                    DashboardId = user.Dashboard.DashboardId;
+                }
             }
         }
 

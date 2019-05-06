@@ -1,5 +1,6 @@
 ﻿@page "{id:int}"
 @model CiellosAzureDashboard.Pages.Dashboards.EditModel
+@Html.AntiForgeryToken()
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewData["Title"] = "Edit";
@@ -9,7 +10,7 @@
 <h4>Dashboard</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-7">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Dashboard.DashboardId" />
@@ -30,28 +31,88 @@
                 <span asp-validation-for="Dashboard.DashboardLogoUrl" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Dashboard.DashboardApplications.FirstOrDefault().Application" class="control-label"></label>
-                <select asp-for="SelectedApplications" asp-items="@Model.Applications" class="form-control"></select>
-                <span asp-validation-for="Dashboard.DashboardApplications.FirstOrDefault().Application" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <fieldset class="form-add-set">
-                    <label for="sets" class="control-label">Links</label>
-                    <div class="form-group">
+                <div class="">
+                    <fieldset class="form-add-set">
+                        <label for="sets" class="control-label">Links</label>
                         <div class="add-sets" id="sets">
                             @Html.EditorFor(x => x.Dashboard.Links)
                         </div>
-                        <div class="form-group">
-                            <input type="button" value="+" class="glyphicon glyphicon-plus btn btn-success" onclick="addRow()">
-                        </div>
-                    </div>
-                </fieldset>
-            </div>
-            <div class="form-group">
-                <div class="form-group">
-                    <input type="submit" value="Save" class="btn btn-primary" />
+
+                    </fieldset>
+                    <input type="button" value="+" class="glyphicon glyphicon-plus btn btn-success" onclick="addRow()">
                 </div>
             </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label for="sets" class="control-label">Available applications</label>
+                        <select asp-for="AvailableApplications" asp-items="@Model.AllApplications" id="applications" class="form-control" size="8" multiple="multiple"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="sets"> </label>
+                        <button type="button" id="applications_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+                        <button type="button" id="applications_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+                        <button type="button" id="applications_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+                        <button type="button" id="applications_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="sets" class="control-label">Selected applications</label>
+                        <select asp-for="SelectedApplications" asp-items="@Model.Applications" id="applications_to" class="form-control" size="8" multiple="multiple"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Dashboard.DisplayType" class="control-label"></label>
+                <select asp-for="SelectedDashboardType" asp-items="@Html.GetEnumSelectList<DisplayType>()" class="form-control" id="displayType"></select>
+                <span asp-validation-for="Dashboard.DisplayType" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" id="SelectedTypeList">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label for="sets" class="control-label">Available Machines</label>
+                        <select asp-for="AllVMs" asp-items="@Model.AllVMsList" id="vms" class="form-control" size="8" multiple="multiple"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="sets" class="control-label"> </label>
+                        <button type="button" id="vms_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+                        <button type="button" id="vms_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+                        <button type="button" id="vms_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+                        <button type="button" id="vms_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="sets" class="control-label">Selected machines</label>
+                        <select asp-for="SelectedVMs" asp-items="@Model.SelectedVMsList" id="vms_to" class="form-control" size="8" multiple="multiple"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" id="ExcludedTypeList">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label for="sets" class="control-label">Available Machines</label>
+                        <select asp-for="AllVMs" asp-items="@Model.AllVMsList" id="vme" class="form-control" size="8" multiple="multiple"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="sets" class="control-label"> </label>
+                        <button type="button" id="vme_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+                        <button type="button" id="vme_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+                        <button type="button" id="vme_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+                        <button type="button" id="vme_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="sets" class="control-label">Excluded machines</label>
+                        <select asp-for="ExcludedVMs" asp-items="@Model.ExcludedVMsList" id="vme_to" class="form-control" size="8" multiple="multiple"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <input type="submit" value="Save and close" class="btn btn-primary" />
+                </div>
+            </div>
+
         </form>
     </div>
 </div>
@@ -61,34 +122,142 @@
 </div>
 
 @section Scripts {
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js" asp-append-version="true"></script>
+    <script src="~/js/multiselect.js" asp-append-version="true"></script>
     <script type="text/javascript">
+        function myFunction(event) {
+            alert("myFunction type=" + event.type);
+        }
+        EventBus.addEventListener("move_to_right", updateVMs);
+        EventBus.addEventListener("move_to_left", updateVMs);
+        function getJSONFromSelectList(sel) {
+            var object = new Object();
+            var arr = new Array();
+
+            
+            // loop through options in select list
+            for (var i = 0, len = sel.options.length; i < len; i++) {
+                opt = sel.options[i];
+
+                var obj = new Object();
+                obj.Key = opt.value;
+                obj.Value = opt.text;
+                arr.push(obj);
+            }
+            object.DashboardId = "@Model.Dashboard.DashboardId";
+            object.data = arr;
+            return object;
+        }
+        var applications_to = document.getElementById('applications_to');
+        var vms = $('#vms');
+        var vms_to = $('#vms_to');
+        var vme = $('#vme');
+        var vme_to = $('#vme_to');
+        function updateVMs(event) {
+
+            var options = {};
+            options.url = "?handler=updatelinks";
+            options.type = "POST";
+
+            var res = JSON.stringify(getJSONFromSelectList(applications_to));
+
+            options.data = res;
+            options.contentType = "application/json";
+            options.dataType = "json";
+
+            options.beforeSend = function (xhr) {
+                xhr.setRequestHeader("XSRF-TOKEN",
+                    $('input:hidden[name="__RequestVerificationToken"]').val());
+            };
+            options.success = function (msg) {
+                vms.children().remove();
+                vms_to.children().remove();
+                vme.children().remove();
+                vme_to.children().remove();
+
+                $.each(msg.allVMs, function (index, value) {
+
+                    vms.append($('<option></option>').val(value.value).text(value.text));
+                    vme.append($('<option></option>').val(value.value).text(value.text));
+                });
+            };
+            //options.error = function () {
+            //    alert(response);
+            //};
+            $.ajax(options);
+        };
+
+
+        $('#applications').multiselect();
+        $('#vms').multiselect();
+        $('#vme').multiselect();
+        
+        var SelectedTypeList = document.getElementById('SelectedTypeList');
+        var ExcludedTypeList = document.getElementById('ExcludedTypeList');
+
+
+        ///select/exclude
+        $('#displayType').on('change', function (item)
+        {
+            
+            switch (item.currentTarget.selectedOptions[0].label)
+            {
+                case "ShowAll":
+                    {
+                        SelectedTypeList.style.display = 'none';
+                        ExcludedTypeList.style.display = 'none';
+                        break;
+                    }
+                case "SelectType":
+                    {
+
+                        SelectedTypeList.style.display = 'block';
+                        ExcludedTypeList.style.display = 'none';
+                        break;
+                    }
+                case "ExcludeType":
+                    {
+                        SelectedTypeList.style.display = 'none';
+                        ExcludedTypeList.style.display = 'block';
+                        break;
+                    }
+            }
+
+
+
+        }
+        );
+
         var sets = document.getElementById('sets');
         function addRow() {
             var div = document.createElement('div');
             var rowcount = sets.childElementCount;
 
-            div.className = 'form-inline add-set';          
-            
-            var divRow = '<div class="form-group">';
+            div.className = 'form-inline add-set';
+
+            var divRow = '<div class="col-xs-5">';
             divRow += '      <label asp-for="Dashboard.Links[' + rowcount + '].linkName" class="control-label">Name</label>';
             divRow += '      <input class="form-control valid" id="Dashboard_Links_' + rowcount + '__linkName" name="Dashboard.Links[' + rowcount + '].linkName" type="text" aria-invalid="false">';
             divRow += '      <span asp-validation-for="Dashboard.Links[' + rowcount + '].linkName" class="text-danger" />';
             divRow += '  </div>';
-            divRow += '  <div class="form-group">';
+            divRow += '  <div class="col-xs-5">';
             divRow += '      <label asp-for="Dashboard.Links[' + rowcount + '].linkUrl" class="control-label">URL</label>';
             divRow += '      <input class="form-control valid" id="Dashboard_Links_' + rowcount + '__linkUrl" name="Dashboard.Links[' + rowcount + '].linkUrl" type="text" aria-invalid="false">';
             divRow += '       <span asp-validation-for="Dashboard.Links[' + rowcount + '].linkUrl" class="text-danger" />';
             divRow += '  </div>';
-            divRow += '  <input type="button" value="-" class="glyphicon glyphicon-minus btn btn-danger" onclick="removeRow(this)">';
-            
+            divRow += '  <div class="col-xs-1"><input type="button" value="-" class="glyphicon glyphicon-minus btn btn-danger" onclick="removeRow(this)"></div>';
+
             div.innerHTML = divRow;
 
             sets.appendChild(div);
         }
-
+        
         function removeRow(input) {
-            sets.removeChild(input.parentNode);
+            sets.removeChild(input.parentNode.parentNode);
         }
+        $(document).ready(function () {
+            $('#displayType').change();
+        });
     </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

@@ -43,7 +43,7 @@ namespace CiellosAzureDashboard.Pages
             }
             _accessCode = _accessCode.Replace("?accessCode=","");
             var vmList = azureHelper.GetVirtualMachinesByAccessCode(_accessCode);
-            return new JsonResult(vmList);
+            return new JsonResult(new { data = vmList });
         }
     }
 }

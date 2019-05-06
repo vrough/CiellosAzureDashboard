@@ -71,7 +71,7 @@
 
     if (!GeoName)
     {
-        if ("@User.Identity.IsAuthenticated"=== "False") {GeoName = "Anon"; }
+        if ("@User.Identity.IsAuthenticated" === "False") { GeoName = "Anonymous"; }
         else {GeoName = "@User.Identity.Name"; }
     }
     var makeStatus = function (index, obj) {
@@ -99,7 +99,7 @@
         var $dataVMSize = $(obj).find("td:nth-child(5)"); /* VM Size */
         var $dataPowerState = $(obj).find("td:nth-child(6)"); /* Power State */
         var $dataProvisioning = $(obj).find("td:nth-child(7)"); /* Provisioning State */
-        var $dataVMId = $(obj).find("td:nth-child(8)"); /* VMId */
+        var $dataVmId = $(obj).find("td:nth-child(8)"); /* VMId */
         dd = obj;
 
         if ($dataVMName.text().length == 0) {
@@ -110,7 +110,8 @@
         var $RGVMName = {
             resourcegroup: $dataRG.text(),
             vmname: $dataVMName.text(),
-            subscription: $dataSubscription.text()
+            subscription: $dataSubscription.text(),
+            vmid: $dataVmId.text()
         };
 
         getInformation(index, obj);
@@ -148,6 +149,7 @@
         var $dataVMName = $(obj).find("td:nth-child(1)"); /* VM Name */
         var $dataRG = $(obj).find("td:nth-child(2)"); /* Resource Group */
         var $dataSubscription = $(obj).find("td:nth-child(4)"); /* Subscription */
+        var $dataVmId = $(obj).find("td:nth-child(8)"); /* VMId */
         dd = obj;
 
         //Get Last Start/Stop Who Status
@@ -155,13 +157,15 @@
             resourcegroup: $dataRG.text(),
             vmname: $dataVMName.text(),
             subscription: $dataSubscription.text(),
-            key: 'Stop'
+            key: 'Stop',
+            vmid: $dataVmId.text()
         };
         var $RGVMNameStart = {
             resourcegroup: $dataRG.text(),
             vmname: $dataVMName.text(),
             subscription: $dataSubscription.text(),
-            key: 'Start'
+            key: 'Start',
+            vmid: $dataVmId.text()
         };
 
         $.when($.ajax({
@@ -287,7 +291,7 @@
             var $dataSubscription = $row.find("td:nth-child(4)"); /* Subscription */
             var $dataTags = $row.find("td:nth-child(3)"); /* Tags */
             var $dataPowerState = $row.find("td:nth-child(6)"); /* Power State */
-
+            var $dataVmId = $row.find("td:nth-child(8)"); /* VMId */
             $(this).prop("disabled", "disabled");
 
             var $RGVMName = {
@@ -306,7 +310,8 @@
                     ip: Geo.ip,
                     city: Geo.city,
                     region: Geo.region,
-                    country: Geo.country_name
+                    country: Geo.country_name,
+                    vmid: $dataVmId.text()
                 };
                 console.log("Stopping..." + JSON.stringify($RGVMName));
 
@@ -351,7 +356,8 @@
                     ip: Geo.ip,
                     city: Geo.city,
                     region: Geo.region,
-                    country: Geo.country_name
+                    country: Geo.country_name,
+                    vmid: $dataVmId.text()
                 };
                 console.log("Starting... " + JSON.stringify($RGVMName));
 
@@ -455,6 +461,7 @@
             "initComplete": makeAllStatuses,
             "language": {
                 "search": "Filter records:",
+                "emptyTable": "no virtual machines available :(",
                 "searchPlaceholder": "type here.."
             }
 

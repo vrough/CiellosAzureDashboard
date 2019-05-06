@@ -19,18 +19,25 @@
                         try
                         {
                             Data.CADContext context = new Data.CADContext();
-                            
+
                             int? dId = (int?)(ViewData["DasboardId"]);
 
                             var dash = context.Dashboards.Include(d => d.Links).FirstOrDefault(d => d.DashboardId == dId);
-
-                            foreach (Link lnk in dash.Links)
+                            if (dash != null)
                             {
-                            <li class="list-group-item"><a href="@lnk.linkUrl" target='_blank'>@lnk.linkName</a></li>
+                                if (dash.Links != null)
+                                {
+                                    foreach (Link lnk in dash.Links)
+                                    {
+                                        <li class="list-group-item"><a href="@lnk.linkUrl" target='_blank'>@lnk.linkName</a></li>
+                                    }
+                                }
                             }
                         }
                         catch
-                        { }
+                        {
+
+                        }
                     }
                 </div>
             </div>

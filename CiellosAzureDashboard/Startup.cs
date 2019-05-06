@@ -32,8 +32,8 @@ namespace CiellosAzureDashboard
 
         public void ConfigureServices(IServiceCollection services)
         {  
-            services.AddScoped<IX509Helper, X509Helper>();
-            services.AddScoped<IAzureHelper, AzureHelper>();
+            services.AddSingleton<IX509Helper, X509Helper>();
+            services.AddSingleton<IAzureHelper, AzureHelper>();
             services.Configure<CookiePolicyOptions>(options =>
             {
                 options.CheckConsentNeeded = context => true;
@@ -83,16 +83,17 @@ namespace CiellosAzureDashboard
                     opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
+            services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");
             services.AddOData();
             services.AddTransient<DashboardModelBuilder>();
             services.AddTransient<IAppVersionService, AppVersionService>();
-            services.AddDbContext<CADContext>();
+            services.AddTransient<CADContext>();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("IsSuperUser", policy =>
                     policy.Requirements.Add(new SuperUserRequirement(true)));
             });
-            services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");
+            
 
         }
 
@@ -103,13 +104,14 @@ namespace CiellosAzureDashboard
                 scope.ServiceProvider.GetService<CADContext>().Database.Migrate();
             }
             var serviceProvider = app.ApplicationServices.GetService<IServiceProvider>();
-            
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
             else
             {
+                app.UseStatusCodePagesWithReExecute("/Error/{0}");
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }

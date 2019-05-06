@@ -3,32 +3,20 @@ using System;
 using CiellosAzureDashboard.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CiellosAzureDashboard.Migrations
 {
     [DbContext(typeof(CADContext))]
-    partial class CADContextModelSnapshot : ModelSnapshot
+    [Migration("20190421175524_VMStatus")]
+    partial class VMStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.2.4-servicing-10062");
-
-            modelBuilder.Entity("CiellosAzureDashboard.Model.ActiveVM", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("DashboardId");
-
-                    b.Property<string>("VMId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ActiveVMs");
-                });
 
             modelBuilder.Entity("CiellosAzureDashboard.Model.Application", b =>
                 {
@@ -63,8 +51,6 @@ namespace CiellosAzureDashboard.Migrations
 
                     b.Property<string>("DashboardName");
 
-                    b.Property<int>("DisplayType");
-
                     b.HasKey("DashboardId");
 
                     b.ToTable("Dashboards");
@@ -81,6 +67,20 @@ namespace CiellosAzureDashboard.Migrations
                     b.HasAlternateKey("ApplicationId", "DashboardId");
 
                     b.ToTable("DashboardApplication");
+                });
+
+            modelBuilder.Entity("CiellosAzureDashboard.Model.InactiveVM", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("DashboardId");
+
+                    b.Property<string>("VMId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InactiveVMs");
                 });
 
             modelBuilder.Entity("CiellosAzureDashboard.Model.Link", b =>

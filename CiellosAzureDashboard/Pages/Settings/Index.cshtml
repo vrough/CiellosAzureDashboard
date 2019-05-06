@@ -16,13 +16,13 @@
                 <span asp-validation-for="settings.MaxNumEventsLogStorePerVM" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="button" class="btn btn-danger" value="Cleanup system logs" onclick="cleanLogs();" />
+                <input type="button" class="btn btn-default" value="Cleanup system logs" onclick="cleanLogs();" />
             </div>
             <div class="form-group">
-                <input type="submit" class="btn btn-primary" asp-page-handler="Download" value="Download public certificate" />
+                <input type="submit" class="btn btn-info" asp-page-handler="Download" value="Download public certificate" />
             </div>
             <div class="form-group">
-                <input type="button" id="btnUpload" class="btn btn-danger" value="Rotate private certificate" />
+                <input type="button" id="btnUpload" class="btn btn-success" value="Rotate private certificate" />
                 <label class="control-label text-info">@Model.CertExpirationDate</label>
             </div>
             <div class="form-group">

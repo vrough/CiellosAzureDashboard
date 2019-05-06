@@ -48,14 +48,12 @@ namespace CiellosAzureDashboard.Pages
         }
         public IActionResult OnPostStartVM([FromBody] JObject jobject)
         {
-            var vm = azureHelper.GetVirtualMachine(jobject["vmname"].ToString(), jobject["resourcegroup"].ToString());
-            vm.StartAsync();
+            azureHelper.StartVM(jobject["vmid"].ToString());
             return new JsonResult("Started");
         }
         public IActionResult OnPostStopVM([FromBody] JObject jobject)
         {
-            var vm = azureHelper.GetVirtualMachine(jobject["vmname"].ToString(), jobject["resourcegroup"].ToString());
-            vm.DeallocateAsync();
+            azureHelper.StopVM(jobject["vmid"].ToString());
             return new JsonResult("Stopped");
         }
         public async Task<IActionResult> OnPostSetAsDefaultAsync([FromBody] JObject jobject)
