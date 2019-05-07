@@ -18,9 +18,9 @@ namespace CiellosAzureDashboard
         List<VM> GetVirtualMachinesByAccessCode(string _accessCode);
         JsonResult GetVirtualMachinesByUser(ClaimsPrincipal _currentUser);
         Task UpdateAllVirtualMashinesAsync();
-        IDbContextTransaction GetTransaction(CADContext _context);
-        void CommitTransaction();
-        void RollbackTransaction();
-        CADContext GetCurrentContext();
+        //IDbContextTransaction GetTransaction(CADContext _context);
+        //void CommitTransaction();
+        //void RollbackTransaction();
+
     }
 }

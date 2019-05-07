@@ -46,10 +46,10 @@
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.1.0" />
     <PackageReference Include="Microsoft.Azure.Common" Version="2.2.1" />
     <PackageReference Include="Microsoft.Azure.Management.Cdn" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Azure.Management.Compute" Version="25.0.0" />
-    <PackageReference Include="Microsoft.Azure.Management.Compute.Fluent" Version="1.21.0" />
-    <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.21.0" />
-    <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.21.0" />
+    <PackageReference Include="Microsoft.Azure.Management.Compute" Version="27.0.0" />
+    <PackageReference Include="Microsoft.Azure.Management.Compute.Fluent" Version="1.22.0" />
+    <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.22.0" />
+    <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.22.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
       <PrivateAssets>all</PrivateAssets>
@@ -57,7 +57,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.20" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="3.3.19" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="2.3.7" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="2.3.8" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
   </ItemGroup>

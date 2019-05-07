@@ -27,13 +27,11 @@ namespace CiellosAzureDashboard
         private TransactionScope TransactionScope { get; set; }
         private System.Data.Common.DbTransaction currentTransaction { get; set; }
         public X509Helper X509Helper { get; set; }
-        public CADContext context;
         public bool IsDBLocked { get; set; }
 
-        public AzureHelper(IX509Helper _X509Helper, CADContext _context)
+        public AzureHelper(IX509Helper _X509Helper)
         {
             X509Helper = _X509Helper as X509Helper;
-            context = _context;
             VirtualMashinesList = new VMList(this);
             X509Helper.RotateCertificate();
             Task.Run(() => UpdateAllVirtualMashinesAsync());
@@ -119,7 +117,7 @@ namespace CiellosAzureDashboard
 
         public void UpdateAllVirtualMashines()
         {
-            using (GetTransaction(context))
+            using(CADContext context = new CADContext())
             {
                 try
                 {
@@ -137,11 +135,9 @@ namespace CiellosAzureDashboard
                             continue;
                         }
                     }
-                    CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -156,68 +152,10 @@ namespace CiellosAzureDashboard
             return VirtualMashinesList;
         }
 
-        public CADContext GetCurrentContext()
-        {
-            if (context == null)
-            {
-                context = new CADContext();
-            }
-            return context;
-        }
-
-        public IDbContextTransaction GetTransaction(CADContext _context)
-        {
-            IDbContextTransaction _tmpTransaction;
-            if (currentTransaction == null)
-            {
-                _tmpTransaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.ReadCommitted);
-                currentTransaction = _tmpTransaction.GetDbTransaction();
-                return _tmpTransaction;
-            }
-            else
-            {
-                if (_context.Database.CurrentTransaction != null)
-                    return _context.Database.CurrentTransaction;
-                else
-                {
-                    if (currentTransaction.Connection == null)
-                    {
-                        _tmpTransaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
-                        currentTransaction = _tmpTransaction.GetDbTransaction();
-                        return _tmpTransaction;
-                    }
-                    else
-                    {
-                        return _context.Database.UseTransaction(currentTransaction);
-                    }
-                    
-                }
-
-            }
-        }
-
-        public void CommitTransaction()
-        {
-            if (currentTransaction != null)
-            {
-                currentTransaction.Commit();
-                currentTransaction = null;
-            }
-        }
-
-        public void RollbackTransaction()
-        {
-            if (currentTransaction != null)
-            {
-                currentTransaction.Rollback();
-                currentTransaction = null;
-            }
-        }
-
         public IVirtualMachine GetVMFromAzure(string _vmId)
         {
             IVirtualMachine machine = null;
-            using (GetTransaction(context))
+            using (CADContext context = new CADContext())
             {
                 try
                 {
@@ -226,12 +164,9 @@ namespace CiellosAzureDashboard
                     Application apps = context.Applications.FirstOrDefault(app => app.AppId == vm.ApplicationId);
                     azure = GetAzureConnection(apps);
                     machine = azure.VirtualMachines.List().FirstOrDefault(v => v.VMId == _vmId);
-
-                    CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -275,17 +210,18 @@ namespace CiellosAzureDashboard
         public JsonResult GetJOVirtualMachine(JObject jobject)
         {
             VM vm = new VM();
-            using (GetTransaction(context))
+            using (CADContext context = new CADContext())
             {
                 try
                 {
                     IVirtualMachine virtualMachine = GetVMFromAzure(jobject["vmid"].ToString());
-                    vm = createLocalVMFromAzureVM(virtualMachine);
-                    CommitTransaction();
+                    if (virtualMachine!= null)
+                    {
+                        vm = VirtualMashinesList.FindOrCreateVM(createLocalVMFromAzureVM(virtualMachine));
+                    }
                 }
                 catch (Exception ex)
                 {
-                    RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -357,27 +293,24 @@ namespace CiellosAzureDashboard
         public JsonResult GetVirtualMachinesByUser(ClaimsPrincipal _currentUser)
         {
             List<VM> vMashines = new List<VM>();
-            using (var _context = new CADContext())
-            using (GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
-                    User currentUser = _context.Users
+                    User currentUser = context.Users
                         .Include(u => u.Dashboard)
                            .ThenInclude(d => d.DashboardApplications)
                         .FirstOrDefault(u => u.UserName == _currentUser.Identity.Name);
                     if (currentUser?.Dashboard == null) return new JsonResult(new { data = "" });
 
-                    var dashboard = _context.Dashboards.Include(d => d.DashboardApplications).FirstOrDefault(d => d.DashboardId == currentUser.Dashboard.DashboardId);
+                    var dashboard = context.Dashboards.Include(d => d.DashboardApplications).FirstOrDefault(d => d.DashboardId == currentUser.Dashboard.DashboardId);
                     if (currentUser.Dashboard.DashboardId != 0)
                     {
                         vMashines = VirtualMashinesList.GetVMs(currentUser.Dashboard.DashboardId);
                     }
-                    CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -397,17 +330,15 @@ namespace CiellosAzureDashboard
         {
             Dashboard dashboard;
             List<VM> vMashines = new List<VM>();
-            using (GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
                     dashboard = context.Dashboards.Include(d => d.DashboardApplications).FirstOrDefault(d => d.DashboardAnonAccessCode == _accessCode);
                     vMashines = VirtualMashinesList.GetVMs(dashboard.DashboardId);
-                    CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -426,16 +357,14 @@ namespace CiellosAzureDashboard
         public Dashboard GetDashboardByAccessCode(string _accessCode)
         {
             Dashboard dashboard = new Dashboard();
-            using (GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
                     dashboard = context.Dashboards.Include(d => d.DashboardApplications).FirstOrDefault(d => d.DashboardAnonAccessCode == _accessCode);
-                    CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -451,17 +380,14 @@ namespace CiellosAzureDashboard
     public class VMList
     {
         private AzureHelper azureHelper;
-        private CADContext context;
         public VMList(AzureHelper _azureHelper)
         {
             azureHelper = _azureHelper;
-            context = azureHelper.context;
-
         }
 
         public void UpdateVMList(IEnumerable<IVirtualMachine> _list, int _appId)
         {
-            using (azureHelper.GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
@@ -472,18 +398,15 @@ namespace CiellosAzureDashboard
                         FindOrCreateVM(vm);
                         vm = null;
                     }
-                    context.SaveChangesInAzure();
-
-                    azureHelper.CommitTransaction();
+                    context.SaveChanges();
                 }
                 catch (Exception ex)
                 {
-                    azureHelper.RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
                     context.Logs.Add(log);
-                    context.SaveChangesInAzure();
+                    context.SaveChanges();
                 }
             }
 
@@ -492,7 +415,7 @@ namespace CiellosAzureDashboard
 
         public void UpdateActiveVMs(int _dashboardId, int[] _VMList)
         {
-            using (azureHelper.GetTransaction(context))
+            using (var context = new CADContext())
             {
                 var activeList = context.ActiveVMs.Where(v => v.DashboardId == _dashboardId);
 
@@ -508,74 +431,34 @@ namespace CiellosAzureDashboard
                 }
                 activeList = null;
 
-                azureHelper.CommitTransaction();
             }
 
         }
-        //public void UpdateActiveVM(int _dashboardId, int[] _ActiveVMList, int[] _InactiveVMList)
-        //{
-        //    using (azureHelper.GetTransaction(context))
-        //    {
-        //        List<VM> inactiveList = GetActiveVMs(_dashboardId);
-        //        if (inactiveList != null && inactiveList.Count > 0)
-        //        {
-        //            List<ActiveVM> activeList = new List<ActiveVM>();
-        //            foreach (int vmId in _ActiveVMList)
-        //            {
-        //                VM vm = context.VMs.AsNoTracking().FirstOrDefault(v => v.Id == vmId);
-        //                ActiveVM ivm = context.ActiveVMs.FirstOrDefault(v => v.VMId == vm.VMId);
-        //                if (ivm != null)
-        //                {
-        //                    activeList.Add(ivm);
-        //                }
-        //                vm = null;
-        //                ivm = null;
-        //            }
-        //            if (activeList.Count > 0)
-        //            {
-        //                context.ActiveVMs.RemoveRange(activeList);
-        //                context.SaveChanges();
-        //            }
-
-        //            foreach (int vmId in _InactiveVMList)
-        //            {
-        //                AddActiveVM(_dashboardId, vmId);
-        //            }
-        //            activeList = null;
-        //        }
-        //        else
-        //        {
-        //            foreach (int vmId in _InactiveVMList)
-        //            {
-        //                AddActiveVM(_dashboardId, vmId);
-        //            }
-        //        }
-        //        azureHelper.CommitTransaction();
-        //    }
-
-        //}
 
         public List<VM> GetVMs(int _dashboardId)
         {
             List<VM> list = new List<VM>();
-            Dashboard dashboard = context.Dashboards.Include(d=>d.DashboardApplications).AsNoTracking().FirstOrDefault(d => d.DashboardId == _dashboardId);
-            switch (dashboard.DisplayType)
+            using (var context = new CADContext())
             {
-                case DisplayType.ShowAll:
-                    {
-                        list = GetVMsByDash(dashboard);
-                        break;
-                    }
-                case DisplayType.ExcludeType:
-                    {
-                        list = GetVMsByDash(dashboard, true);
-                        break;
-                    }
-                case DisplayType.SelectType:
-                    {
-                        list = GetActiveVMs(dashboard.DashboardId);
-                        break;
-                    }
+                Dashboard dashboard = context.Dashboards.Include(d => d.DashboardApplications).AsNoTracking().FirstOrDefault(d => d.DashboardId == _dashboardId);
+                switch (dashboard.DisplayType)
+                {
+                    case DisplayType.ShowAll:
+                        {
+                            list = GetVMsByDash(dashboard);
+                            break;
+                        }
+                    case DisplayType.ExcludeType:
+                        {
+                            list = GetVMsByDash(dashboard, true);
+                            break;
+                        }
+                    case DisplayType.SelectType:
+                        {
+                            list = GetActiveVMs(dashboard.DashboardId);
+                            break;
+                        }
+                }
             }
             return list;
         }
@@ -583,72 +466,83 @@ namespace CiellosAzureDashboard
         public List<VM> GetActiveVMs(int _dashboardId)
         {
             List<VM> list = new List<VM>();
-
-            foreach (var activeVM in context.ActiveVMs.Where(iv => iv.DashboardId == _dashboardId))
+            using (var context = new CADContext())
             {
-                var vm = context.VMs.FirstOrDefault(v => v.VMId == activeVM.VMId);
-                list.Add(vm);
+                foreach (var activeVM in context.ActiveVMs.Where(iv => iv.DashboardId == _dashboardId))
+                {
+                    var vm = context.VMs.FirstOrDefault(v => v.VMId == activeVM.VMId);
+                    list.Add(vm);
+                }
             }
-
             return list;
         }
 
         public void AddActiveVM(int _dashboardId, string _vmId)
         {
-            ActiveVM vm = context.ActiveVMs.FirstOrDefault(iv => iv.DashboardId == _dashboardId && iv.VMId == _vmId);
-            if (vm == null)
+            using (var context = new CADContext())
             {
-                vm = new ActiveVM();
-                vm.DashboardId = _dashboardId;
-                vm.VMId = _vmId;
-                context.ActiveVMs.Add(vm);
-                context.SaveChanges();
-                vm = null;
+                ActiveVM vm = context.ActiveVMs.FirstOrDefault(iv => iv.DashboardId == _dashboardId && iv.VMId == _vmId);
+                if (vm == null)
+                {
+                    vm = new ActiveVM();
+                    vm.DashboardId = _dashboardId;
+                    vm.VMId = _vmId;
+                    context.ActiveVMs.Add(vm);
+                    context.SaveChanges();
+                    vm = null;
+                }
             }
 
         }
 
         public void AddActiveVM(int _dashboardId, int _vmId)
         {
-            VM vm = context.VMs.FirstOrDefault(v => v.Id == _vmId);
-            if (vm != null)
+            using (var context = new CADContext())
             {
-                AddActiveVM(_dashboardId, vm.VMId);
+                VM vm = context.VMs.FirstOrDefault(v => v.Id == _vmId);
+                if (vm != null)
+                {
+                    AddActiveVM(_dashboardId, vm.VMId);
+                }
             }
         }
 
         public void RemoveActiveVM(int _dashboardId, int _vmId)
         {
-            VM vm = context.VMs.FirstOrDefault(v => v.Id == _vmId);
-            if (vm != null)
+            using (var context = new CADContext())
             {
-                RemoveActiveVM(_dashboardId, vm.VMId);
+                VM vm = context.VMs.FirstOrDefault(v => v.Id == _vmId);
+                if (vm != null)
+                {
+                    RemoveActiveVM(_dashboardId, vm.VMId);
+                }
             }
         }
 
         public void RemoveActiveVM(int _dashboardId, string _vmId)
         {
-            ActiveVM vm = context.ActiveVMs.FirstOrDefault(iv => iv.DashboardId == _dashboardId && iv.VMId == _vmId);
-            if (vm != null)
+            using (var context = new CADContext())
             {
-                context.ActiveVMs.Remove(vm);
-                context.SaveChanges();
+                ActiveVM vm = context.ActiveVMs.FirstOrDefault(iv => iv.DashboardId == _dashboardId && iv.VMId == _vmId);
+                if (vm != null)
+                {
+                    context.ActiveVMs.Remove(vm);
+                    context.SaveChanges();
+                }
             }
         }
 
         public List<VM> GetVMsByAppID(int _appId)
         {
             List<VM> list = new List<VM>();
-            using (azureHelper.GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
                     list = context.VMs.Where(vms => vms.ApplicationId == _appId).ToList();
-                    azureHelper.CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    azureHelper.RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -686,7 +580,7 @@ namespace CiellosAzureDashboard
         {
             List<VM> list = new List<VM>();
             Dashboard dashboard = new Dashboard();
-            using (azureHelper.GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
@@ -708,11 +602,9 @@ namespace CiellosAzureDashboard
                         }
                         list = excludeInactiveList;
                     }
-                    azureHelper.CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    azureHelper.RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
@@ -723,7 +615,7 @@ namespace CiellosAzureDashboard
             return list;
         }
 
-        private VM FindOrCreateVM(VM _azureVm)
+        public VM FindOrCreateVM(VM _azureVm)
         {
             VM vm = SelectVMByVmId(_azureVm.VMId);
             if (vm != null)
@@ -740,23 +632,21 @@ namespace CiellosAzureDashboard
         private VM CreateVMByVM(VM _vm)
         {
             VM vm = new VM();
-            using (azureHelper.GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
                     context.VMs.Add(_vm);
                     vm = context.VMs.FirstOrDefault(v => v.VMId == _vm.VMId);
-                    context.SaveChangesInAzure();
-                    azureHelper.CommitTransaction();
+                    context.SaveChanges();
                 }
                 catch (Exception ex)
                 {
-                    azureHelper.RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
                     context.Logs.Add(log);
-                    context.SaveChangesInAzure();
+                    context.SaveChanges();
                 }
             }
             return vm;
@@ -765,22 +655,19 @@ namespace CiellosAzureDashboard
         private VM SelectVMByVmId(string _vmId)
         {
             VM vm = new VM();
-            using (azureHelper.GetTransaction(context))
+            using (var context = new CADContext())
             {
                 try
                 {
                     vm = context.VMs.FirstOrDefault(v => v.VMId == _vmId);
-
-                    azureHelper.CommitTransaction();
                 }
                 catch (Exception ex)
                 {
-                    azureHelper.RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
                     context.Logs.Add(log);
-                    context.SaveChangesInAzure();
+                    context.SaveChanges();
                 }
             }
             return vm;
@@ -789,7 +676,7 @@ namespace CiellosAzureDashboard
         private void UpdateByVM(VM _vm, VM _azureVm)
         {
             VM vm = new VM();
-            using (azureHelper.GetTransaction(azureHelper.context))
+            using (var context = new CADContext())
             {
                 try
                 {
@@ -803,18 +690,15 @@ namespace CiellosAzureDashboard
                     _vm.VMSize = _azureVm.VMSize;
 
                     context.VMs.Update(_vm);
-                    context.SaveChangesInAzure();
-
-                    azureHelper.CommitTransaction();
+                    context.SaveChanges();
                 }
                 catch (Exception ex)
                 {
-                    azureHelper.RollbackTransaction();
                     Log log = new Log();
                     log.name = ex.ToString();
                     log.timestamp = DateTime.UtcNow;
                     context.Logs.Add(log);
-                    context.SaveChangesInAzure();
+                    context.SaveChanges();
                 }
             }
         }

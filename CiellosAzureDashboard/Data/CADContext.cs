@@ -32,11 +32,7 @@ namespace CiellosAzureDashboard.Data
             optionsBuilder.UseSqlite(connection);
 
         }
-    
-        public  int SaveChangesInAzure()
-        {
-            return base.SaveChanges();
-        }
+
         public override int SaveChanges()
         {
             //if(AzureHelperService.AzureHelper != null)
