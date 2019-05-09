@@ -19,6 +19,10 @@
                 <input type="button" class="btn btn-default" value="Cleanup system logs" onclick="cleanLogs();" />
             </div>
             <div class="form-group">
+                <input type="button" class="btn btn-default" value="Cleanup vm cache" onclick="cleanupVMCache();" />
+                <label class="control-label text-info">@Model.CleanupResult</label>
+            </div>
+            <div class="form-group">
                 <input type="submit" class="btn btn-info" asp-page-handler="Download" value="Download public certificate" />
             </div>
             <div class="form-group">
@@ -56,6 +60,21 @@
             $.ajax({
                 type: "POST",
                 url: '/Logs/Index?handler=cleanLogs',
+                contentType: "application/json; charset=utf-8",
+                //data: vmName,
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                },
+                failure: function (response) {
+                    alert(response);
+                }
+            })
+        }
+        function cleanupVMCache() {
+            $.ajax({
+                type: "POST",
+                url: '/Settings/Index?handler=cleanupLocalVMCache',
                 contentType: "application/json; charset=utf-8",
                 //data: vmName,
                 dataType: "json",

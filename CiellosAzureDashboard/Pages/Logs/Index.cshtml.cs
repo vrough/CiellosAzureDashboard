@@ -26,6 +26,7 @@ namespace CiellosAzureDashboard.Pages.Logs
         }
         public IActionResult OnPostCleanLogs()
         {
+
             DashboardHelper.CleanLogs(_context);
             return new JsonResult(new { data = "successfull" });
         }

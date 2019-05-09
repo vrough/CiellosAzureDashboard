@@ -1,6 +1,7 @@
 ﻿using CiellosAzureDashboard.Data;
 using CiellosAzureDashboard.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Management.Cdn;
 using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
@@ -8,6 +9,8 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.IdentityModel.Clients;
+using Microsoft.Rest;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -43,20 +46,22 @@ namespace CiellosAzureDashboard
         /// </summary>
         /// <param name="_app">Application instance</param>
         /// <returns></returns>
-        private IAzure GetAzureConnection(Application _app)
+        private IAzure GetAzureConnection(Application _app, bool _withoutSubscription = false)
         {
-            if (!String.IsNullOrEmpty(_app.ClientSecret))
-            {
-                return GetAzureConnection(_app.ClientId,
-                               _app.ClientSecret,
-                               _app.TenantId,
-                               _app.SubscriptionId);
-            }
-            else
-            {
-                return GetAzureConnection(_app.ClientId,
-                                          _app.TenantId,
-                                          _app.SubscriptionId);
+                if (!String.IsNullOrEmpty(_app.ClientSecret))
+                {
+                    return GetAzureConnection(_app.ClientId,
+                                   _app.ClientSecret,
+                                   _app.TenantId,
+                                   _app.SubscriptionId, 
+                                   _withoutSubscription);
+                }
+                else
+                {
+                    return GetAzureConnection(_app.ClientId,
+                                              _app.TenantId,
+                                              _app.SubscriptionId,
+                                              _withoutSubscription);
             }
         }
 
@@ -66,15 +71,27 @@ namespace CiellosAzureDashboard
         /// <param name="_clientId"></param>
         /// <param name="_tenantId"></param>
         /// <returns></returns>
-        private IAzure GetAzureConnection(string _clientId, string _tenantId, string _subscriptionId)
+        private IAzure GetAzureConnection(string _clientId, string _tenantId, string _subscriptionId, bool _withoutSubscription = false)
         {
             IAzure azure;
             var creds = new AzureCredentialsFactory().FromServicePrincipal(_clientId, X509Helper.GetRootCertificate(), _tenantId, AzureEnvironment.AzureGlobalCloud);
-            azure = Azure
-                .Configure()
-                .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
-                .Authenticate(creds)
-                .WithSubscription(_subscriptionId);
+            if (_withoutSubscription)
+            {
+                azure = Azure
+                        .Configure()
+                        .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
+                        .Authenticate(creds)
+                        .WithDefaultSubscription();
+            }
+            else
+            {
+                azure = Azure
+                        .Configure()
+                        .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
+                        .Authenticate(creds)
+                        .WithSubscription(_subscriptionId);
+            }
+
             return azure;
         }
 
@@ -86,14 +103,27 @@ namespace CiellosAzureDashboard
         /// <param name="_tenantId">Tenant identifier</param>
         /// <param name="_subscriptionId">Subscription inentifier</param>
         /// <returns></returns>
-        private IAzure GetAzureConnection(string _clientId, string _clientSecret, string _tenantId, string _subscriptionId)
+        private IAzure GetAzureConnection(string _clientId, string _clientSecret, string _tenantId, string _subscriptionId, bool _withoutSubscription = false)
         {
+            IAzure azure;
             var creds = new AzureCredentialsFactory().FromServicePrincipal(_clientId, _clientSecret, _tenantId, AzureEnvironment.AzureGlobalCloud);
-            var azure = Azure
-                .Configure()
-                .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
-                .Authenticate(creds)
-                .WithSubscription(_subscriptionId);
+            if (_withoutSubscription)
+            {
+                azure = Azure
+                        .Configure()
+                        .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
+                        .Authenticate(creds)
+                        .WithDefaultSubscription();
+            }
+            else
+            {
+                azure = Azure
+                        .Configure()
+                        .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
+                        .Authenticate(creds)
+                        .WithSubscription(_subscriptionId);
+            }
+
             return azure;
         }
 
@@ -117,7 +147,7 @@ namespace CiellosAzureDashboard
 
         public void UpdateAllVirtualMashines()
         {
-            using(CADContext context = new CADContext())
+            using (CADContext context = new CADContext())
             {
                 try
                 {

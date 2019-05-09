@@ -21,6 +21,7 @@ namespace CiellosAzureDashboard.Pages.Settings
     {
         public string Message { get; set; }
         public string SaveResult { get; set; }
+        public string CleanupResult { get; set; }
         private AzureHelper azureHelper;
         private readonly CADContext context = new CADContext();
         [BindProperty]
@@ -68,11 +69,26 @@ namespace CiellosAzureDashboard.Pages.Settings
             SaveResult = "Settings saved.";
             return Page();
         }
+
         public async Task<IActionResult> OnPostDownload(string filename)
         {
             var cert = azureHelper.GetCertificate();
             var fileArray = cert.GetRawCertData();
             return await Task.Run(()=> File(fileArray, "application/pkix-cert", cert.IssuerName.Name.Replace("CN=", "") + ".cer"));
+        }
+
+
+        public async Task<IActionResult> OnPostCleanupLocalVMCacheAsync()
+        {
+            using (CADContext context = new CADContext())
+            {
+                var vmList = context.VMs.AsNoTracking().ToList();
+                context.VMs.RemoveRange(vmList);
+                await context.SaveChangesAsync();
+            }
+
+            CleanupResult = "Cleanup successed";
+            return Page();
         }
         public ActionResult OnPostRotateCertificate()
         {
