@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ciellos Dashboards</title>
+    <title>@ViewData["Title"]</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -14,7 +14,7 @@
     <nav class="navbar navbar-default">
         <div class="container">
             <div class="navbar-header">
-                <a asp-page="/Index" class="navbar-brand">Ciellos Dashboards</a>
+                <a asp-page="/Index" class="navbar-brand">Azure Dashboards</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -35,6 +35,7 @@
                                     <li class="@(page == "/users/index" ? "active" : "")"><a asp-page="/Users/Index">Users</a></li>
                                     <li class="@(page == "/logs/index" ? "active" : "")"><a asp-page="/Logs/Index">Logs</a></li>
                                     <li class="@(page == "/settings/index" ? "active" : "")"><a asp-page="/Settings/Index">Settings</a></li>
+                                    <li class="@(page == "/schedule/index" ? "active" : "")"><a asp-page="/Schedule/Index">Schedule</a></li>
                                 }
                             }
                         }

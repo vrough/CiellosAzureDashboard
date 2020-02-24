@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CiellosAzureDashboard.Model
 {
-    public class VM
+    public class VM : IEquatable<VM>
     {
         public VM()
         {
@@ -27,6 +27,23 @@ namespace CiellosAzureDashboard.Model
         public int ApplicationId { get; set; }
 
         public string VMNameRGName => "VM: " + VMName + ". RG: " + ResourceGroupName;
+
+
+        public override bool Equals(object obj)
+        {
+            return obj.GetHashCode() == this.GetHashCode();
+        }
+
+        public bool Equals(VM obj)
+        {
+            return obj.VMId == this.VMId;
+        }
+
+        public override int GetHashCode()
+        {
+            return VMId.GetHashCode();
+        }
+
 
     }
 }

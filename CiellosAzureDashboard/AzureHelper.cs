@@ -38,6 +38,8 @@ namespace CiellosAzureDashboard
             VirtualMashinesList = new VMList(this);
             X509Helper.RotateCertificate();
             Task.Run(() => UpdateAllVirtualMashinesAsync());
+            Task.Run(() => StartVirtualMashinesAsync());
+            Task.Run(() => StopVirtualMashinesAsync());
             AzureHelperService.AzureHelper = this;
         }
 
@@ -145,8 +147,66 @@ namespace CiellosAzureDashboard
 
         }
 
+        public async Task StartVirtualMashinesAsync()
+        {
+            while (true)
+            {
+                await Task.Delay(30000);
+                IsDBLocked = true;
+                using (CADContext context = new CADContext())
+                {
+                    TimeSpan timeNow = System.DateTime.Now.TimeOfDay;
+                    TimeSpan time = new TimeSpan(timeNow.Hours, timeNow.Minutes, 0);
+                    List<Schedules> VMs = context.Schedules.Include(s => s.ScheduleVMsList).Where(s => s.StartTime == time).ToList();
+                    foreach(var res in VMs)
+                    {
+                        foreach (var vm in res.ScheduleVMsList)
+                        {
+                            VM virt = context.VMs.Find(vm.VMId);
+                            this.StartVM(virt.VMId.ToString());
+                        }
+                    }
+                }
+                IsDBLocked = false;
+                GC.Collect();
+            }
+
+        }
+
+        public async Task StopVirtualMashinesAsync()
+        {
+            while (true)
+            {
+                await Task.Delay(30000);
+                IsDBLocked = true;
+                using (CADContext context = new CADContext())
+                {
+                    TimeSpan timeNow = System.DateTime.Now.TimeOfDay;
+                    TimeSpan time = new TimeSpan(timeNow.Hours, timeNow.Minutes, 0);
+                    List<Schedules> VMs = context.Schedules.Include(s => s.ScheduleVMsList).Where(s => s.StopTime == time).ToList();
+                    foreach (var res in VMs)
+                    {
+                        foreach (var vm in res.ScheduleVMsList)
+                        {
+                            VM virt = context.VMs.Find(vm.VMId);
+                            this.StopVM(virt.VMId.ToString());
+                        }
+                    }
+                }
+                IsDBLocked = false;
+                GC.Collect();
+            }
+
+        }
+
         public void UpdateAllVirtualMashines()
         {
+            using (CADContext context = new CADContext())
+            {
+                var vmList = context.VMs.AsNoTracking().ToList();
+                context.VMs.RemoveRange(vmList);
+                context.SaveChanges();
+            }
             using (CADContext context = new CADContext())
             {
                 try
@@ -157,8 +217,9 @@ namespace CiellosAzureDashboard
                         try
                         {
                             azure = GetAzureConnection(apps);
-                            VirtualMashinesList.UpdateVMList(azure.VirtualMachines.List(), apps.AppId);
-                            azure = null;
+                            var curVMList = azure.VirtualMachines.List();
+                            VirtualMashinesList.UpdateVMList(curVMList, apps.AppId);
+                             azure = null;
                         }
                         catch
                         {
@@ -174,6 +235,8 @@ namespace CiellosAzureDashboard
                     context.Logs.Add(log);
                     context.SaveChanges();
                 }
+
+
             }
         }
 
@@ -501,7 +564,8 @@ namespace CiellosAzureDashboard
                 foreach (var activeVM in context.ActiveVMs.Where(iv => iv.DashboardId == _dashboardId))
                 {
                     var vm = context.VMs.FirstOrDefault(v => v.VMId == activeVM.VMId);
-                    list.Add(vm);
+                    if(vm != null)
+                        list.Add(vm);
                 }
             }
             return list;
@@ -596,7 +660,7 @@ namespace CiellosAzureDashboard
                 List<VM> excludeActiveList = new List<VM>();
                 foreach (VM vm in list)
                 {
-                    if (GetActiveVMs(_dashboard.DashboardId).Find(v => v.VMId == vm.VMId) == null)
+                    if (GetActiveVMs(_dashboard.DashboardId)?.Find(v => v.VMId == vm.VMId) == null)
                     {
                         excludeActiveList.Add(vm);
                     }

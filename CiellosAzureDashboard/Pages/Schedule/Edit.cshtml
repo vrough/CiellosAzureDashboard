@@ -1,5 +1,5 @@
 ﻿@page "{id:int}"
-@model CiellosAzureDashboard.Pages.Dashboards.EditModel
+@model CiellosAzureDashboard.Pages.Schedule.EditModel
 @Html.AntiForgeryToken()
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
@@ -7,47 +7,34 @@
 }
 <h1>Edit</h1>
 
-<h4>Dashboard</h4>
+<h4>Schedule</h4>
 <hr />
 <div class="row">
     <div class="col-md-7">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Dashboard.DashboardId" />
+            <input type="hidden" asp-for="Schedule.Id" />
             <div class="form-group">
-                <label asp-for="Dashboard.DashboardName" class="control-label"></label>
-                <input asp-for="Dashboard.DashboardName" class="form-control" />
-                <span asp-validation-for="Dashboard.DashboardName" class="text-danger"></span>
+                <label asp-for="Schedule.Name" class="control-label"></label>
+                <input asp-for="Schedule.Name" class="form-control" />
+                <span asp-validation-for="Schedule.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Dashboard.DashboardAnonAccessCode" class="control-label"></label>
-                <input asp-for="Dashboard.DashboardAnonAccessCode" class="form-control" />
-                <span asp-validation-for="Dashboard.DashboardAnonAccessCode" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="Dashboard.DashboardLogoUrl" class="control-label"></label>
-                <input asp-for="Dashboard.DashboardLogoUrl" class="form-control" />
-                <span asp-validation-for="Dashboard.DashboardLogoUrl" class="text-danger"></span>
+                <label asp-for="Schedule.StartTime" class="control-label"></label>
+                <input asp-for="Schedule.StartTime" class="form-control" />
+                <span asp-validation-for="Schedule.StartTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <div class="">
-                    <fieldset class="form-add-set">
-                        <label for="sets" class="control-label">Links</label>
-                        <div class="add-sets" id="sets">
-                            @Html.EditorFor(x => x.Dashboard.Links)
-                        </div>
-
-                    </fieldset>
-                    <input type="button" value="+" class="glyphicon glyphicon-plus btn btn-success" onclick="addRow()">
-                </div>
+                <label asp-for="Schedule.StopTime" class="control-label"></label>
+                <input asp-for="Schedule.StopTime" class="form-control" />
+                <span asp-validation-for="Schedule.StopTime" class="text-danger"></span>
             </div>
 
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-5">
                         <label for="sets" class="control-label">Available applications</label>
-                        <select asp-for="AvailableApplications" asp-items="@Model.AllApplications" id="applications" class="form-control" size="8" multiple="multiple"></select>
+                        <select asp-for="AvailableVMsId" asp-items="@Model.AvailableVMsList" id="applications" class="form-control" size="8" multiple="multiple"></select>
                     </div>
                     <div class="col-md-2">
                         <label for="sets"> </label>
@@ -58,58 +45,10 @@
                     </div>
                     <div class="col-md-5">
                         <label for="sets" class="control-label">Selected applications</label>
-                        <select asp-for="SelectedApplications" asp-items="@Model.Applications" id="applications_to" class="form-control" size="8" multiple="multiple"></select>
+                        <select asp-for="SelectedVmsId" asp-items="@Model.SelectedVMsList" id="applications_to" class="form-control" size="8" multiple="multiple"></select>
                     </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Dashboard.DisplayType" class="control-label"></label>
-                <select asp-for="SelectedDashboardType" asp-items="@Html.GetEnumSelectList<DisplayType>()" class="form-control" id="displayType"></select>
-                <span asp-validation-for="Dashboard.DisplayType" class="text-danger"></span>
-            </div>
-
-            <div class="form-group" id="SelectedTypeList">
-                <div class="row">
-                    <div class="col-md-5">
-                        <label for="sets" class="control-label">Available Machines</label>
-                        <select asp-for="AllVMs" asp-items="@Model.AllVMsList" id="vms" class="form-control" size="8" multiple="multiple"></select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="sets" class="control-label"> </label>
-                        <button type="button" id="vms_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
-                        <button type="button" id="vms_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
-                        <button type="button" id="vms_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
-                        <button type="button" id="vms_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
-                    </div>
-                    <div class="col-md-5">
-                        <label for="sets" class="control-label">Selected machines</label>
-                        @if (Model.SelectedVMsList != null)
-                        {
-                            <select asp-for="SelectedVMs" asp-items="@Model.SelectedVMsList" id="vms_to" class="form-control" size="8" multiple="multiple"></select>
-                        }
-                    </div>
-                </div>
-            </div>
-            <div class="form-group" id="ExcludedTypeList">
-                <div class="row">
-                    <div class="col-md-5">
-                        <label for="sets" class="control-label">Available Machines</label>
-                        <select asp-for="AllVMs" asp-items="@Model.AllVMsList" id="vme" class="form-control" size="8" multiple="multiple"></select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="sets" class="control-label"> </label>
-                        <button type="button" id="vme_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
-                        <button type="button" id="vme_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
-                        <button type="button" id="vme_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
-                        <button type="button" id="vme_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
-                    </div>
-                    <div class="col-md-5">
-                        <label for="sets" class="control-label">Excluded machines</label>
-                        <select asp-for="ExcludedVMs" asp-items="@Model.ExcludedVMsList" id="vme_to" class="form-control" size="8" multiple="multiple"></select>
-                    </div>
-                </div>
-            </div>
-
             <div class="form-group">
                 <div class="row">
                     <input type="submit" value="Save and close" class="btn btn-primary" />
@@ -147,7 +86,7 @@
                 obj.Value = opt.text;
                 arr.push(obj);
             }
-            object.DashboardId = "@Model.Dashboard.DashboardId";
+            object.ScheduleId = "@Model.Schedule.Id";
             object.data = arr;
             return object;
         }

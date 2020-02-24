@@ -11,6 +11,9 @@ using System.Threading;
 
 namespace CiellosAzureDashboard.Data
 {
+    //enable-migrations
+    //add-migration "Add"
+    //update-database
     public class CADContext : DbContext
     {
         public virtual DbSet<Application> Applications { get; set; }
@@ -20,6 +23,8 @@ namespace CiellosAzureDashboard.Data
         public virtual DbSet<Setting> Settings { get; set; }
         public virtual DbSet<VM> VMs { get; set; }
         public virtual DbSet<ActiveVM> ActiveVMs { get; set; }
+        public virtual DbSet<Schedules> Schedules { get; set; }
+        public virtual DbSet<ScheduleVM> ScheduleVM { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -53,6 +58,7 @@ namespace CiellosAzureDashboard.Data
             modelBuilder.Entity<User>().HasKey(s => s.UserId);
             modelBuilder.Entity<VM>().HasKey(s => s.Id);
             modelBuilder.Entity<ActiveVM>().HasKey(s => s.Id);
+            modelBuilder.Entity<Schedules>().HasKey(s => s.Id);
 
             modelBuilder.Entity<DashboardApplication>()
                 .HasKey(bc => new { bc.DashboardId, bc.ApplicationId });

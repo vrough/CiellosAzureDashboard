@@ -1,0 +1,73 @@
+﻿@page
+@model CiellosAzureDashboard.Pages.Schedule.CreateModel
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create Dashboard</h1>
+<h4>Dashboard</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Schedules.Id" />
+            <div class="form-group">
+                <label asp-for="Schedules.Name" class="control-label"></label>
+                <input asp-for="Schedules.Name" class="form-control" />
+                <span asp-validation-for="Schedules.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Schedules.StartTime" class="control-label"></label>
+                <input asp-for="Schedules.StartTime" class="form-control" />
+                <span asp-validation-for="Schedules.StartTime" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Schedules.StopTime" class="control-label"></label>
+                <input asp-for="Schedules.StopTime" class="form-control" />
+                <span asp-validation-for="Schedules.StopTime" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+<script type="text/javascript">
+    var sets = document.getElementById('sets');
+    function addRow() {
+        var div = document.createElement('div');
+        var rowcount = sets.childElementCount;
+
+        div.className = 'form-inline add-set';
+
+        var divRow = '<div class="form-group">';
+        divRow += '      <label asp-for="Dashboard.Links[' + rowcount + '].linkName" class="control-label">Name</label>';
+        divRow += '      <input class="form-control valid" id="Dashboard_Links_' + rowcount + '__linkName" name="Dashboard.Links[' + rowcount + '].linkName" type="text" aria-invalid="false">';
+        divRow += '      <span asp-validation-for="Dashboard.Links[' + rowcount + '].linkName" class="text-danger" />';
+        divRow += '  </div>';
+        divRow += '  <div class="form-group">';
+        divRow += '      <label asp-for="Dashboard.Links[' + rowcount + '].linkUrl" class="control-label">URL</label>';
+        divRow += '      <input class="form-control valid" id="Dashboard_Links_' + rowcount + '__linkUrl" name="Dashboard.Links[' + rowcount + '].linkUrl" type="text" aria-invalid="false">';
+        divRow += '       <span asp-validation-for="Dashboard.Links[' + rowcount + '].linkUrl" class="text-danger" />';
+        divRow += '  </div>';
+        divRow += '  <input type="button" value="-" class="glyphicon glyphicon-minus btn btn-danger" onclick="removeRow(this)">';
+
+        div.innerHTML = divRow;
+
+        sets.appendChild(div);
+    }
+
+    function removeRow(input) {
+        sets.removeChild(input.parentNode);
+    }
+</script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
